@@ -23,7 +23,7 @@ export default function Footer() {
         {BRAND.hindi}
       </motion.p>
       <div className="mx-auto mt-10 flex max-w-[1320px] flex-wrap justify-between gap-6 border-t border-white/10 px-4 pt-8 text-sm text-ivory/60 sm:px-8">
-        <p><span className="font-display text-xl text-ivory">{SITE.name}</span><br />{BRAND.slogan && <span className="text-zari">{BRAND.slogan.en}<br />{BRAND.slogan.hi}<br /></span>}{BRAND.footerLine}</p>
+        <p><span className="font-display text-xl text-ivory">{SITE.name}</span><br />{BRAND.slogan && <span className="text-zari">{BRAND.slogan}<br /></span>}{BRAND.footerLine}</p>
         <nav className="flex flex-wrap gap-x-6 gap-y-2" aria-label="Footer">
           <button onClick={() => toSection("bazaar")} className="hover:text-zari">Bazaar</button>
           <button onClick={() => toSection("map")} className="hover:text-zari">Craft map</button>

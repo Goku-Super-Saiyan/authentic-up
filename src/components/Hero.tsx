@@ -159,8 +159,8 @@ export default function Hero() {
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-night" />
 
       <motion.div style={{ y: yText, opacity: fade }} className="relative z-10 mx-auto flex h-full max-w-[1320px] flex-col justify-start px-4 pt-[clamp(110px,16vh,170px)] sm:px-8">
-        <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="font-mono text-[11px] uppercase tracking-[0.3em] text-marigold sm:text-xs">
-          उत्तर प्रदेश · 75 districts · 75 crafts · one bazaar
+        <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="font-mono text-[11px] uppercase tracking-[0.18em] text-marigold sm:text-xs sm:tracking-[0.3em]">
+          {BRAND.eyebrow}
         </motion.p>
         <div className="mt-4 font-display leading-[0.86] tracking-tight">
           <h1 className="flex overflow-hidden pb-2 text-[clamp(64px,12.5vw,190px)] font-normal">
@@ -177,10 +177,7 @@ export default function Hero() {
             </motion.span>
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.4 }} className="sm:mb-[0.6em] font-body tracking-normal">
               {BRAND.slogan && (
-                <p className="mb-3 leading-tight">
-                  <span className="zari-text block font-display text-[clamp(24px,2.4vw,34px)] sm:whitespace-nowrap">{BRAND.slogan.en}</span>
-                  <span className="mt-1 block text-[clamp(14px,1.3vw,17px)] font-medium text-marigold">{BRAND.slogan.hi}</span>
-                </p>
+                <p className="zari-text mb-3 font-display text-[clamp(24px,2.4vw,34px)] leading-tight sm:whitespace-nowrap">{BRAND.slogan}</p>
               )}
               <p className={`${BRAND.slogan ? "max-w-[24em]" : "max-w-[22em]"} text-[clamp(15px,1.5vw,19px)] font-light leading-snug text-ivory/85`}>{BRAND.heroLine}</p>
             </motion.div>
