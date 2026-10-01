@@ -1,0 +1,35 @@
+name: Deploy to Hostinger
+# Builds the site and uploads dist/ to Hostinger over FTP on every push to main.
+# Does nothing until these repository secrets exist (GitHub > Settings > Secrets and variables > Actions):
+#   FTP_SERVER, FTP_USERNAME, FTP_PASSWORD   (hPanel > Files > FTP Accounts)
+# Optional repository variable FTP_DIR (default public_html/) if the domain lives elsewhere.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency: hostinger-deploy
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HAS_FTP: ${{ secrets.FTP_SERVER != '' }}
+    steps:
+      - if: env.HAS_FTP != 'true'
+        run: echo "No FTP_SERVER secret yet, skipping the Hostinger upload."
+      - if: env.HAS_FTP == 'true'
+        uses: actions/checkout@v4
+      - if: env.HAS_FTP == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.HAS_FTP == 'true'
+        run: npm ci && npm run build
+      - if: env.HAS_FTP == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: ${{ vars.FTP_DIR || 'public_html/' }}
