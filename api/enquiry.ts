@@ -24,6 +24,11 @@ export async function POST(req: Request): Promise<Response> {
   const reference = "IUP-" + Math.floor(100000 + Math.random() * 900000);
   const env = process.env;
 
+  // Nowhere to save or send it yet: tell the page to hand the enquiry over on WhatsApp or email instead.
+  const canSave = !!(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
+  const canMail = !!(env.RESEND_API_KEY && env.ENQUIRY_TO && env.ENQUIRY_FROM);
+  if (!canSave && !canMail) return Response.json({ fallback: true, reference }, { status: 503 });
+
   if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
     const r = await fetch(`${env.SUPABASE_URL}/rest/v1/enquiries`, {
       method: "POST",

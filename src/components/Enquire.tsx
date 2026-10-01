@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { DISTRICTS } from "../data/districts";
 import { useStore } from "../store";
-import { SITE } from "../config";
+import { SITE, waLink } from "../config";
 
 const TYPES = ["Bulk or wholesale", "Export", "Custom design", "Corporate gifting", "Wedding trousseau", `Selling on ${SITE.name}`, "Something else"];
 const BUDGETS = ["Under ₹25,000", "₹25,000 – 1 lakh", "₹1 – 5 lakh", "Above ₹5 lakh"];
@@ -23,12 +23,23 @@ export default function Enquire() {
   const [f, setF] = useState<Form>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
   const [sent, setSent] = useState<string | null>(null);
+  const card = useRef<HTMLDivElement>(null);
+  // The form is much taller than the thank-you card, so bring the card into view once it replaces the form.
+  useEffect(() => { if (sent) card.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [sent]);
   const [open, setOpen] = useState<number | null>(0);
   const [honey, setHoney] = useState("");
   const set = (k: keyof Form) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
 
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState("");
+  // Set when the server can't take enquiries yet: the buyer finishes sending it on WhatsApp or by email.
+  const [handoff, setHandoff] = useState<{ href: string; via: "WhatsApp" | "email" } | null>(null);
+  const handoffFor = (reference: string) => {
+    const text = [`Enquiry ${reference} for ${SITE.name}`, `Type: ${f.type}`, `Craft: ${f.craft}`, `District: ${f.district}`, f.qty ? `Quantity: ${f.qty}` : null, `Budget: ${f.budget}`, "", f.message, "", `${f.name} · ${f.email}${f.phone ? ` · ${f.phone}` : ""}`].filter((l) => l !== null).join("\n");
+    const wa = waLink(text);
+    if (wa) return { href: wa, via: "WhatsApp" as const };
+    return { href: `mailto:${SITE.email}?subject=${encodeURIComponent(`Enquiry ${reference} from ${f.name}`)}&body=${encodeURIComponent(text)}`, via: "email" as const };
+  };
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const err: typeof errors = {};
@@ -48,6 +59,7 @@ export default function Enquire() {
       });
       if (r.status === 404 || r.status === 405) { setSent(`IUP-${Math.floor(100000 + Math.random() * 899999)}`); return; } // preview without a server
       const data = await r.json().catch(() => ({}));
+      if (data.fallback) { setHandoff(handoffFor(data.reference)); setSent(data.reference); return; }
       if (!r.ok) { setFailed(data.error || "Something went wrong. Please try again."); return; }
       setSent(data.reference);
     } catch {
@@ -66,7 +78,7 @@ export default function Enquire() {
         <p className="mt-6 max-w-[40em] text-lg text-ivory/70">Bulk orders for a store, a hundred sarees for a wedding, carpets for a hotel, or a gift box for your team. Write to us and we'll match you with the right makers.</p>
 
         <div className="mt-14 grid items-start gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <div className="min-w-0 rounded-[28px] border border-white/10 bg-dusk/60 p-6 sm:p-9">
+          <div ref={card} className="min-w-0 scroll-mt-24 rounded-[28px] border border-white/10 bg-dusk/60 p-6 sm:p-9">
             <AnimatePresence mode="wait">
               {!sent ? (
                 <motion.form key="form" onSubmit={submit} noValidate initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: -20 }} className="grid gap-6">
@@ -122,12 +134,19 @@ export default function Enquire() {
                   <motion.div initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 260, damping: 14 }} className="grid h-20 w-20 place-items-center rounded-full bg-zari text-night">
                     <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
                   </motion.div>
-                  <h2 className="font-display text-4xl">Thank you, {f.name.trim().split(" ")[0]}</h2>
+                  <h2 className="font-display text-4xl">{handoff ? "One last step" : `Thank you, ${f.name.trim().split(" ")[0]}`}</h2>
+                  {handoff ? (
+                    <>
+                      <p className="text-lg text-ivory/75">Your enquiry is ready. Tap below to send it to us on {handoff.via}; everything you wrote is already filled in.</p>
+                      <a href={handoff.href} target="_blank" rel="noopener noreferrer" className={`inline-flex h-12 items-center justify-self-start rounded-full px-7 font-semibold text-night ${handoff.via === "WhatsApp" ? "bg-[#25D366]" : "bg-zari"}`}>Send on {handoff.via}</a>
+                    </>
+                  ) : (
                   <p className="text-lg text-ivory/75">We've noted your enquiry about <b className="text-ivory">{f.craft.toLowerCase()}</b> ({f.type.toLowerCase()}) and will reply to <b className="text-ivory">{f.email}</b> within one working day.</p>
+                  )}
                   <p className="font-mono text-sm text-zari">Reference {sent}</p>
                                     <div className="mt-4 flex flex-wrap gap-3">
                     <button onClick={() => go("home")} className="h-12 rounded-full bg-zari px-7 font-semibold text-night">Back to the bazaar</button>
-                    <button onClick={() => { setF(EMPTY); setSent(null); }} className="h-12 rounded-full border border-white/15 px-7 font-semibold hover:border-zari">Send another</button>
+                    <button onClick={() => { setF(EMPTY); setSent(null); setHandoff(null); }} className="h-12 rounded-full border border-white/15 px-7 font-semibold hover:border-zari">Send another</button>
                   </div>
                 </motion.div>
               )}
