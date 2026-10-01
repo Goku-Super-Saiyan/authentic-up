@@ -1,10 +1,12 @@
 // Business details shown on the site. Set these as VITE_ variables in Vercel (see .env.example);
 // the fallbacks are placeholders until Goku sends the real ones.
+import { BRAND } from "./brand/brand";
+
 const env = import.meta.env;
 
 export const SITE = {
-  name: env.VITE_BUSINESS_NAME || "Incredible UP",
-  email: env.VITE_CONTACT_EMAIL || "hello@incredibleup.example",
+  name: env.VITE_BUSINESS_NAME || BRAND.name,
+  email: env.VITE_CONTACT_EMAIL || `hello@${BRAND.domain}`,
   // Digits only, with country code, e.g. 919876543210
   whatsapp: (env.VITE_WHATSAPP || "").replace(/\D/g, ""),
   phone: (env.VITE_PHONE || env.VITE_WHATSAPP || "").replace(/[^\d+]/g, ""),

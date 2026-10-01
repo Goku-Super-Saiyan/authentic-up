@@ -10,6 +10,7 @@
 // Earlier marks are kept in emblem-v1-1.ts, emblem-v1.ts and emblem-v0.ts.
 import type { EmblemVariant } from "./emblem";
 import { CUSPED, OUTER } from "./emblem-v1-1";
+import { BRAND } from "./brand";
 
 // Ghat skyline, left to right, in viewBox units. Each entry: [kind, x, width, height].
 type Part = ["box" | "shikhara" | "dome" | "chhatri", number, number, number];
@@ -44,7 +45,7 @@ function skyline(fill: string, lit: string, flag: string) {
   return `<g fill="${fill}">${shapes}${umbrellas}</g><g fill="${lit}" opacity=".85">${windows}</g><g fill="none" stroke="${flag}" stroke-width="1.4" stroke-linejoin="round">${flags}</g>`;
 }
 
-export function emblemSvgV3(id: string, variant: EmblemVariant = "full", animated = false): string {
+export function emblemSvgV3(id: string, variant: EmblemVariant = "full", animated = false, brand = BRAND): string {
   const g = (n: string) => `${id}-${n}`;
   const full = variant === "full";
   const ink = variant === "ink" ? "#22102A" : "#E7BE63";
@@ -85,7 +86,7 @@ export function emblemSvgV3(id: string, variant: EmblemVariant = "full", animate
   const diyas = [[58, 236], [150, 244], [190, 232]].map(([x, y], i) =>
     `<g class="${g("bob")}" style="animation-delay:${-i}s"><path d="M${x - 5} ${y}h10l-2 3h-6z" fill="${full ? "#C9772B" : ink}"/><path d="M${x} ${y - 7}c2.5 2.5 2.5 5 0 7c-2.5-2-2.5-4.5 0-7z" fill="${full ? "#FFD27A" : ink}"/>${full ? `<circle cx="${x}" cy="${y - 3}" r="6" fill="#FFB627" opacity=".25"/>` : ""}</g>`).join("");
 
-  return `<svg viewBox="0 0 240 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Incredible UP emblem, अतुल्य उत्तर प्रदेश">
+  return `<svg viewBox="0 0 240 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${brand.name} emblem, ${brand.hindi}">
   <defs>
     <linearGradient id="${g("gold")}" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#FFE7A6"/><stop offset=".35" stop-color="#E7BE63"/><stop offset=".65" stop-color="#B8862B"/><stop offset="1" stop-color="#F6D98C"/>
@@ -152,7 +153,7 @@ export function emblemSvgV3(id: string, variant: EmblemVariant = "full", animate
 
   <!-- अतुल्य उत्तर प्रदेश, below UP -->
   <text x="120" y="250" text-anchor="middle" font-family="Mukta, 'Noto Sans Devanagari', sans-serif" font-weight="700" font-size="17" letter-spacing=".5"
-    fill="${full ? "#FFE7A6" : ink}" stroke="${full ? "#1A0B30" : paper}" stroke-width="${full ? 3.2 : 0}" paint-order="stroke" stroke-linejoin="round">अतुल्य उत्तर प्रदेश</text>
+    fill="${full ? "#FFE7A6" : ink}" stroke="${full ? "#1A0B30" : paper}" stroke-width="${full ? 3.2 : 0}" paint-order="stroke" stroke-linejoin="round">${brand.hindi}</text>
 
   <g fill="${gold}" opacity="${full ? 0.9 : 1}">
     <rect x="28" y="262" width="184" height="3"/><rect x="20" y="272" width="200" height="3"/>

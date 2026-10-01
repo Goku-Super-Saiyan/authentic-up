@@ -4,7 +4,7 @@ import { DISTRICTS } from "../data/districts";
 import { useStore } from "../store";
 import { SITE } from "../config";
 
-const TYPES = ["Bulk or wholesale", "Export", "Custom design", "Corporate gifting", "Wedding trousseau", "Selling on Incredible UP", "Something else"];
+const TYPES = ["Bulk or wholesale", "Export", "Custom design", "Corporate gifting", "Wedding trousseau", `Selling on ${SITE.name}`, "Something else"];
 const BUDGETS = ["Under ₹25,000", "₹25,000 – 1 lakh", "₹1 – 5 lakh", "Above ₹5 lakh"];
 const CRAFTS = ["Banarasi silk sarees", "Hand-knotted carpets", "Chikankari", "Glass bangles", "Brass and metal craft", "Attar", "Zari zardozi", "Black pottery", "Wood carving", "Terracotta", "Other ODOP craft"];
 const FAQ = [

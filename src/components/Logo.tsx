@@ -1,5 +1,6 @@
 import { useId, useMemo } from "react";
 import { emblemSvg, type EmblemVariant } from "../brand/emblem";
+import { BRAND } from "../brand/brand";
 
 export function Emblem({ className = "", variant = "full", animated = false }: { className?: string; variant?: EmblemVariant; animated?: boolean }) {
   const id = "e" + useId().replace(/[^a-zA-Z0-9]/g, "");
@@ -13,9 +14,9 @@ export function Wordmark({ compact = false }: { compact?: boolean }) {
       <Emblem className={compact ? "h-10 w-[34px]" : "h-12 w-[42px]"} animated />
       <span className="flex flex-col leading-none">
         <span className="font-display text-[22px] leading-none tracking-tight">
-          Incredible <span className="zari-text">UP</span>
+          {BRAND.word} <span className="zari-text">UP</span>
         </span>
-        <span className="mt-1 hidden text-[11px] tracking-wide text-mist sm:block">अतुल्य उत्तर प्रदेश</span>
+        <span className="mt-1 hidden text-[11px] tracking-wide text-mist sm:block">{BRAND.hindi}</span>
       </span>
     </span>
   );

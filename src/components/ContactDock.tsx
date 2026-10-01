@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import { telLink, waLink } from "../config";
+import { SITE, telLink, waLink } from "../config";
 
 // Floating WhatsApp and call buttons, bottom right on every page. Hidden until a number is configured.
 export default function ContactDock() {
   const [open, setOpen] = useState(false);
-  const wa = waLink("Namaste! I found Incredible UP and have a question.");
+  const wa = waLink(`Namaste! I found ${SITE.name} and have a question.`);
   const tel = telLink();
   if (!wa && !tel) return null;
   return (

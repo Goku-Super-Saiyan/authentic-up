@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Emblem } from "./Logo";
 import { scrollToId, useStore } from "../store";
 import { SITE, telLink, waLink } from "../config";
+import { BRAND } from "../brand/brand";
 
 export default function Footer() {
   const { go, page } = useStore();
@@ -19,10 +20,10 @@ export default function Footer() {
         className="zari-text select-none text-center font-display text-[clamp(64px,15vw,240px)] leading-[1.1]"
         aria-hidden="true"
       >
-        अतुल्य उत्तर प्रदेश
+        {BRAND.hindi}
       </motion.p>
       <div className="mx-auto mt-10 flex max-w-[1320px] flex-wrap justify-between gap-6 border-t border-white/10 px-4 pt-8 text-sm text-ivory/60 sm:px-8">
-        <p><span className="font-display text-xl text-ivory">Incredible UP</span><br />The crafts of Uttar Pradesh, from the people who make them.</p>
+        <p><span className="font-display text-xl text-ivory">{SITE.name}</span><br />The crafts of Uttar Pradesh, from the people who make them.</p>
         <nav className="flex flex-wrap gap-x-6 gap-y-2" aria-label="Footer">
           <button onClick={() => toSection("bazaar")} className="hover:text-zari">Bazaar</button>
           <button onClick={() => toSection("map")} className="hover:text-zari">Craft map</button>

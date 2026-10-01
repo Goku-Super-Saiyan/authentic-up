@@ -31,6 +31,15 @@ Put a photo in `public/products/` and set `photo: "products/<file>.jpg"` on that
 
 Current: V3, the Mor emblem at dusk on the Kashi ghats (`src/brand/emblem-v3.ts`, `public/brand/v3/`). Earlier versions are kept in `emblem-v1-1.ts`, `emblem-v1.ts` and `emblem-v0.ts`, with their SVGs in `public/brand/` and their logo sheets in `brand-sheets/`.
 
+## Two storefronts
+
+The same code builds two sites. `VITE_BRAND` picks the brand at build time (`src/brand/brand.ts`):
+
+- unset or `incredible`: **Incredible UP**, अतुल्य उत्तर प्रदेश (Vercel project `incredible-up`)
+- `authentic`: **Authentic UP**, प्रामाणिक उत्तर प्रदेश (a second Vercel project on the authenticup domain)
+
+Both Vercel projects import this repo, so every push to `main` updates both.
+
 ## Going live
 
 1. **GitHub**: push this folder to the `incredible-up` repo. `.github/workflows/ci.yml` type-checks and builds every push.

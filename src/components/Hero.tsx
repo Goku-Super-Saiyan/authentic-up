@@ -3,6 +3,7 @@ import { useMemo, useRef } from "react";
 import { rng } from "../art/crafts";
 import { scrollToId } from "../store";
 import Magnetic from "./Magnetic";
+import { BRAND } from "../brand/brand";
 
 // Dusk over the Varanasi ghats, drawn as layered SVG silhouettes.
 const W = 1600, SUN_X = 1120;
@@ -52,7 +53,7 @@ function skyline(seed: number, base: number, minH: number, maxH: number, lit: bo
   return { path: d, windows, flags };
 }
 
-const TITLE = "Incredible".split("");
+const TITLE = BRAND.word.split("");
 
 export default function Hero() {
   const ref = useRef<HTMLElement>(null);
@@ -70,7 +71,7 @@ export default function Hero() {
   const glints = useMemo(() => { const R = rng(4); return Array.from({ length: 34 }, (_, i) => { const y = 732 + i * 5; const spread = 30 + i * 4.5; return [SUN_X - spread / 2 + (R() - 0.5) * spread * 0.6, y, 20 + R() * spread * 0.6] as const; }); }, []);
 
   return (
-    <section ref={ref} className="relative isolate h-[min(100svh,940px)] min-h-[700px] overflow-hidden bg-night" aria-label="Welcome to Incredible UP">
+    <section ref={ref} className="relative isolate h-[min(100svh,940px)] min-h-[700px] overflow-hidden bg-night" aria-label={`Welcome to ${BRAND.name}`}>
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
         <defs>
           <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
@@ -168,7 +169,7 @@ export default function Hero() {
                 {ch}
               </motion.span>
             ))}
-            <span className="sr-only">Incredible UP</span>
+            <span className="sr-only">{BRAND.name}</span>
           </h1>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-8">
             <motion.span aria-hidden="true" initial={{ opacity: 0, scale: 0.8, filter: "blur(12px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} transition={{ delay: 1, duration: 1.1 }} className="zari-text origin-left text-[clamp(84px,17vw,260px)]">

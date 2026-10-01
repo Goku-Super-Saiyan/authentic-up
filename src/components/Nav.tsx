@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-
 import { useState } from "react";
 import { scrollToId, scrollToTop, useStore } from "../store";
 import { Wordmark } from "./Logo";
+import { BRAND } from "../brand/brand";
 
 const LINKS = [
   ["Icons of UP", "icons"],
@@ -23,7 +24,7 @@ export default function Nav() {
       style={{ top: 0, paddingTop: "env(safe-area-inset-top, 0px)" }}
     >
       <div className="mx-auto flex h-16 max-w-[1320px] items-center gap-6 px-4 sm:px-8">
-        <button onClick={() => (page === "home" ? scrollToTop() : go("home"))} className="whitespace-nowrap" aria-label="Incredible UP, back to top">
+        <button onClick={() => (page === "home" ? scrollToTop() : go("home"))} className="whitespace-nowrap" aria-label={`${BRAND.name}, back to top`}>
           <Wordmark compact />
         </button>
         <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Main">
