@@ -27,7 +27,7 @@ export default function Nav() {
         <button onClick={() => (page === "home" ? scrollToTop() : go("home"))} className="whitespace-nowrap" aria-label={`${BRAND.name}, back to top`}>
           <Wordmark compact />
         </button>
-        <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Main">
+        <nav className="ml-auto hidden items-center gap-1 lg:flex" aria-label="Main">
           {LINKS.map(([label, id]) => (
             <button key={id} onClick={() => { if (page !== "home") { go("home"); setTimeout(() => scrollToId(id), 60); } else scrollToId(id); }} className="rounded-full px-4 py-2 text-[15px] text-ivory/80 transition hover:bg-white/5 hover:text-ivory">
               {label}
@@ -39,7 +39,7 @@ export default function Nav() {
         </nav>
         <button
           onClick={() => go("login")}
-          className={`ml-auto flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition md:ml-2 ${user ? "border-zari/50 text-zari" : "border-white/15 hover:border-zari/60"}`}
+          className={`ml-auto flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition lg:ml-2 ${user ? "border-zari/50 text-zari" : "border-white/15 hover:border-zari/60"}`}
           aria-label={user ? `Signed in as ${user}` : "Log in"}
         >
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg>

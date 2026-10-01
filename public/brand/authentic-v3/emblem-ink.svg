@@ -1,4 +1,4 @@
-<svg viewBox="0 0 240 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Authentic UP emblem, प्रामाणिक उत्तर प्रदेश">
+<svg viewBox="0 0 240 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Authentic UP emblem, यूपी की प्रामाणिक पहचान">
   <defs>
     <linearGradient id="auink-gold" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#FFE7A6"/><stop offset=".35" stop-color="#E7BE63"/><stop offset=".65" stop-color="#B8862B"/><stop offset="1" stop-color="#F6D98C"/>
@@ -82,7 +82,7 @@
 
   <!-- अतुल्य उत्तर प्रदेश, below UP -->
   <text x="120" y="250" text-anchor="middle" font-family="Mukta, 'Noto Sans Devanagari', sans-serif" font-weight="700" font-size="17" letter-spacing=".5"
-    fill="#22102A" stroke="#FFF4E2" stroke-width="0" paint-order="stroke" stroke-linejoin="round">प्रामाणिक उत्तर प्रदेश</text>
+    fill="#22102A" stroke="#FFF4E2" stroke-width="0" paint-order="stroke" stroke-linejoin="round">यूपी की प्रामाणिक पहचान</text>
 
   <g fill="#22102A" opacity="1">
     <rect x="28" y="262" width="184" height="3"/><rect x="20" y="272" width="200" height="3"/>

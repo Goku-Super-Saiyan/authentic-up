@@ -175,9 +175,15 @@ export default function Hero() {
             <motion.span aria-hidden="true" initial={{ opacity: 0, scale: 0.8, filter: "blur(12px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} transition={{ delay: 1, duration: 1.1 }} className="zari-text origin-left text-[clamp(84px,17vw,260px)]">
               UP
             </motion.span>
-            <motion.p initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.4 }} className="max-w-[22em] sm:mb-[0.6em] font-body text-[clamp(15px,1.5vw,19px)] font-light leading-snug tracking-normal text-ivory/85">
-              Banarasi silk, Bhadohi carpets, Lucknow chikan and the One District One Product craft of every district, bought straight from the people who make it.
-            </motion.p>
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.4 }} className="sm:mb-[0.6em] font-body tracking-normal">
+              {BRAND.slogan && (
+                <p className="mb-3 leading-tight">
+                  <span className="zari-text block font-display text-[clamp(24px,2.4vw,34px)] sm:whitespace-nowrap">{BRAND.slogan.en}</span>
+                  <span className="mt-1 block text-[clamp(14px,1.3vw,17px)] font-medium text-marigold">{BRAND.slogan.hi}</span>
+                </p>
+              )}
+              <p className={`${BRAND.slogan ? "max-w-[24em]" : "max-w-[22em]"} text-[clamp(15px,1.5vw,19px)] font-light leading-snug text-ivory/85`}>{BRAND.heroLine}</p>
+            </motion.div>
           </div>
         </div>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.7 }} className="mt-8 flex flex-wrap gap-3">
