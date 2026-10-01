@@ -1,6 +1,6 @@
 // Vercel function: POST /api/enquiry
 // Saves the enquiry in Supabase and emails it to the team through Resend.
-// Needs these environment variables in Vercel (never in the code):
+// Needs these environment variables in Vercel (never in the code). SUPABASE_SERVICE_ROLE_KEY may be the legacy service_role JWT or a new sb_secret_ key:
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, ENQUIRY_TO, ENQUIRY_FROM
 
 type Body = { kind?: string; name?: string; email?: string; phone?: string; craft?: string; district?: string; quantity?: string; budget?: string; message?: string; website?: string };
@@ -32,7 +32,12 @@ export async function POST(req: Request): Promise<Response> {
   if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
     const r = await fetch(`${env.SUPABASE_URL}/rest/v1/enquiries`, {
       method: "POST",
-      headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      headers: {
+        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+        // Legacy service_role keys are JWTs and go in Authorization too; new sb_secret_ keys go in apikey only.
+        ...(env.SUPABASE_SERVICE_ROLE_KEY.startsWith("eyJ") ? { Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` } : {}),
+        "Content-Type": "application/json", Prefer: "return=minimal",
+      },
       body: JSON.stringify({ reference, ...e, phone: e.phone || null }),
     });
     if (!r.ok) return Response.json({ error: "We couldn't save your enquiry. Please try again or write to us directly." }, { status: 502 });
