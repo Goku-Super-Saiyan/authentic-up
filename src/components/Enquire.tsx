@@ -143,8 +143,11 @@ export default function Enquire() {
                   ) : (
                   <p className="text-lg text-ivory/75">We've noted your enquiry about <b className="text-ivory">{f.craft.toLowerCase()}</b> ({f.type.toLowerCase()}) and will reply to <b className="text-ivory">{f.email}</b> within one working day.</p>
                   )}
+                  {!handoff && sent && waLink(`Namaste! About my enquiry ${sent}`) && (
+                    <a href={waLink(`Namaste! About my enquiry ${sent}`)!} target="_blank" rel="noopener noreferrer" className="justify-self-start text-sm font-semibold text-[#25D366] underline-offset-4 hover:underline">Want a quicker answer? Chat with us on WhatsApp</a>
+                  )}
                   <p className="font-mono text-sm text-zari">Reference {sent}</p>
-                                    <div className="mt-4 flex flex-wrap gap-3">
+                  <div className="mt-4 flex flex-wrap gap-3">
                     <button onClick={() => go("home")} className="h-12 rounded-full bg-zari px-7 font-semibold text-night">Back to the bazaar</button>
                     <button onClick={() => { setF(EMPTY); setSent(null); setHandoff(null); }} className="h-12 rounded-full border border-white/15 px-7 font-semibold hover:border-zari">Send another</button>
                   </div>
