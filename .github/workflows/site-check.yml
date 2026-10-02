@@ -1,0 +1,46 @@
+name: Check the live site's security
+# Checks every way people reach the site (with and without www, http and https):
+# the certificate, where it redirects, and the security headers. Runs weekly and on demand.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * 1"
+jobs:
+  check:
+    if: github.repository == 'Goku-Super-Saiyan/authentic-up'
+    runs-on: ubuntu-latest
+    steps:
+      - name: DNS
+        run: |
+          for h in authenticup.in www.authenticup.in; do
+            echo "== $h"; dig +short A "$h"; dig +short AAAA "$h"; dig +short CNAME "$h"
+          done
+          echo "== CAA"; dig +short CAA authenticup.in
+      - name: Certificates
+        run: |
+          fail=0
+          for h in authenticup.in www.authenticup.in; do
+            echo "== $h"
+            out=$(echo | timeout 15 openssl s_client -connect "$h:443" -servername "$h" -verify_return_error 2>&1) || true
+            echo "$out" | grep -E "Verify return code|verify error" | head -3
+            echo "$out" | openssl x509 -noout -subject -issuer -enddate -ext subjectAltName 2>/dev/null || echo "no certificate"
+            echo "$out" | grep -q "Verify return code: 0 (ok)" || { echo "::error::$h has no valid certificate"; fail=1; }
+          done
+          exit $fail
+      - name: Redirects
+        if: always()
+        run: |
+          for u in http://authenticup.in https://authenticup.in http://www.authenticup.in https://www.authenticup.in https://www.authenticup.in/hi/; do
+            echo "== $u"
+            curl -sS -o /dev/null -L --max-redirs 5 -w '%{url_effective} %{http_code} redirects=%{num_redirects}\n' "$u" || echo "::error::$u failed"
+          done
+      - name: Security headers
+        if: always()
+        run: |
+          curl -sSI https://www.authenticup.in/ | grep -iE '^(strict-transport|content-security|x-frame|x-content-type|referrer-policy|permissions-policy|cross-origin)' || true
+          for p in / /api/products; do
+            h=$(curl -sSI "https://www.authenticup.in$p")
+            for k in strict-transport-security x-content-type-options referrer-policy x-frame-options content-security-policy; do
+              echo "$h" | grep -qi "^$k:" || echo "::warning::$p is missing $k"
+            done
+          done
