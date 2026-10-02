@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ICONS } from "../data/catalog";
 import { scrollToId, useStore } from "../store";
 import CraftCanvas from "./CraftCanvas";
+import { useLang } from "../i18n";
 
 // Pointed Mughal arch as polygon points in a 0–100 box.
 function archPoints() {
@@ -30,6 +31,7 @@ export function Arch({ children, className = "" }: { children: React.ReactNode; 
 
 export default function CraftJourney() {
   const { setFilter } = useStore();
+  const { t, lang } = useLang();
   const track = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
@@ -59,17 +61,17 @@ export default function CraftJourney() {
   };
 
   return (
-    <section id="icons" className="relative scroll-mt-16 py-[clamp(72px,10vw,130px)]" aria-label="Icons of UP">
+    <section id="icons" className="relative scroll-mt-16 py-[clamp(72px,10vw,130px)]" aria-label={t("Icons of UP", "यूपी की पहचान")}>
       <div className="mx-auto flex max-w-[1320px] flex-wrap items-end justify-between gap-6 px-4 sm:px-8">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-marigold">Icons of UP</p>
-          <h2 className="mt-4 max-w-[12em] font-display text-[clamp(44px,6vw,88px)] leading-[0.95]">Crafts the world knows <span className="zari-text">by their town</span></h2>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-marigold">{t("Icons of UP", "यूपी की पहचान")}</p>
+          <h2 className="mt-4 max-w-[12em] font-display text-[clamp(44px,6vw,88px)] leading-[0.95]">{lang === "hi" ? <>शिल्प, जिन्हें दुनिया <span className="zari-text">उनके शहर से जानती है</span></> : <>Crafts the world knows <span className="zari-text">by their town</span></>}</h2>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => go(active - 1)} disabled={active === 0} aria-label="Previous craft" className="grid h-14 w-14 place-items-center rounded-full border border-white/20 transition hover:border-zari hover:text-zari disabled:opacity-30">
+          <button onClick={() => go(active - 1)} disabled={active === 0} aria-label={t("Previous craft", "पिछला शिल्प")} className="grid h-14 w-14 place-items-center rounded-full border border-white/20 transition hover:border-zari hover:text-zari disabled:opacity-30">
             <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true"><path d="M19 7H2M7 1 1 7l6 6" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
           </button>
-          <button onClick={() => go(active + 1)} disabled={active === ICONS.length - 1} aria-label="Next craft" className="grid h-14 w-14 place-items-center rounded-full bg-zari text-night transition hover:brightness-110 disabled:opacity-30">
+          <button onClick={() => go(active + 1)} disabled={active === ICONS.length - 1} aria-label={t("Next craft", "अगला शिल्प")} className="grid h-14 w-14 place-items-center rounded-full bg-zari text-night transition hover:brightness-110 disabled:opacity-30">
             <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true"><path d="M1 7h17M13 1l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
           </button>
         </div>
@@ -94,9 +96,9 @@ export default function CraftJourney() {
         }}
         onPointerLeave={() => { const el = track.current; if (drag.current && el) { drag.current = null; el.style.scrollSnapType = ""; go(active); } }}
         tabIndex={0}
-        aria-label="Swipe through six crafts"
+        aria-label={t("Swipe through six crafts", "छह शिल्प देखने के लिए स्वाइप करें")}
       >
-        {ICONS.map((c, i) => (
+        {ICONS.map((c, i) => { const x = lang === "hi" ? c.hi : c; return (
           <motion.article
             key={c.name}
             animate={{ opacity: active === i ? 1 : 0.35, scale: active === i ? 1 : 0.94 }}
@@ -104,32 +106,32 @@ export default function CraftJourney() {
             className="grid w-[min(88vw,1060px)] shrink-0 snap-center items-center gap-6 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] md:gap-14"
           >
             <Arch className="mx-auto h-[min(42svh,360px)] w-[min(66vw,290px)] md:h-[min(62svh,560px)] md:w-full md:max-w-[420px]">
-              <CraftCanvas art={c.art} seed={c.seed} label={`${c.name} from ${c.place}`} />
+              <CraftCanvas art={c.art} seed={c.seed} label={t(`${c.name} from ${c.place}`, `${x.name}, ${x.place}`)} />
             </Arch>
             <div className="relative min-w-0 select-none">
-              <span className="text-outline pointer-events-none absolute -top-[0.95em] left-0 hidden font-display md:block text-[clamp(64px,10vw,150px)] leading-none opacity-60" aria-hidden="true">{c.hindi}</span>
-              <p className="relative font-mono text-xs uppercase tracking-[0.25em] text-marigold">{String(i + 1).padStart(2, "0")} / {String(ICONS.length).padStart(2, "0")} · {c.place}</p>
-              <h3 className="relative mt-3 font-display text-[clamp(38px,5vw,72px)] leading-none">{c.name}</h3>
+              <span className="text-outline pointer-events-none absolute -top-[0.95em] left-0 hidden font-display md:block text-[clamp(64px,10vw,150px)] leading-none opacity-60" aria-hidden="true">{lang === "hi" ? c.name : c.hindi}</span>
+              <p className="relative font-mono text-xs uppercase tracking-[0.25em] text-marigold">{String(i + 1).padStart(2, "0")} / {String(ICONS.length).padStart(2, "0")} · {x.place}</p>
+              <h3 className="relative mt-3 font-display text-[clamp(38px,5vw,72px)] leading-none">{x.name}</h3>
               <div className="mt-6 flex items-baseline gap-4 border-t border-white/10 pt-5">
-                <span className="zari-text font-display text-[clamp(44px,5.5vw,84px)] leading-none">{c.figure}</span>
-                <span className="max-w-[12em] text-sm text-ivory/70">{c.figureLabel}</span>
+                <span className="zari-text font-display text-[clamp(44px,5.5vw,84px)] leading-none">{x.figure}</span>
+                <span className="max-w-[12em] text-sm text-ivory/70">{x.figureLabel}</span>
               </div>
-              <p className="mt-5 max-w-[34em] text-[17px] text-ivory/80">{c.fact}</p>
+              <p className="mt-5 max-w-[34em] text-[17px] text-ivory/80">{x.fact}</p>
               <button
                 onClick={() => { setFilter(c.filter); scrollToId("bazaar"); }}
                 className="group mt-7 inline-flex items-center gap-3 rounded-full border border-zari/50 px-6 py-3 font-semibold text-zari transition hover:bg-zari hover:text-night"
               >
-                Shop {c.name}
+                {t(`Shop ${c.name}`, `${x.name} ख़रीदें`)}
                 <svg width="18" height="12" viewBox="0 0 18 12" className="transition group-hover:translate-x-1" aria-hidden="true"><path d="M0 6h15M10 1l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
               </button>
             </div>
           </motion.article>
-        ))}
+        ); })}
       </div>
 
-      <div className="mx-auto mt-8 flex max-w-[1320px] justify-center gap-2 px-4" role="group" aria-label="Choose a craft">
+      <div className="mx-auto mt-8 flex max-w-[1320px] justify-center gap-2 px-4" role="group" aria-label={t("Choose a craft", "शिल्प चुनें")}>
         {ICONS.map((c, i) => (
-          <button key={c.name} onClick={() => go(i)} aria-label={c.name} aria-current={active === i} className="group grid h-8 place-items-center px-1">
+          <button key={c.name} onClick={() => go(i)} aria-label={lang === "hi" ? c.hi.name : c.name} aria-current={active === i} className="group grid h-8 place-items-center px-1">
             <motion.span animate={{ width: active === i ? 40 : 10 }} className={`block h-2.5 rounded-full ${active === i ? "bg-zari" : "bg-white/25 group-hover:bg-white/50"}`} />
           </button>
         ))}

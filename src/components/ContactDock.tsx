@@ -2,11 +2,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { SITE, telLink, waLink } from "../config";
 import { jumpToTop, useStore } from "../store";
+import { useLang } from "../i18n";
 
 // Floating buttons, bottom right on every page: Home on top (once you've scrolled or left the home
 // page), then WhatsApp and call. The contact button is hidden until a number is configured.
 export default function ContactDock() {
   const { page, go } = useStore();
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -15,7 +17,7 @@ export default function ContactDock() {
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
   }, []);
-  const wa = waLink(`Namaste! I found ${SITE.name} and have a question.`);
+  const wa = waLink(t(`Namaste! I found ${SITE.name} and have a question.`, `नमस्ते! मुझे ${SITE.name} मिला और मेरा एक सवाल है।`));
   const tel = telLink();
   const showHome = page !== "home" || scrolled;
   return (
@@ -23,7 +25,7 @@ export default function ContactDock() {
       <AnimatePresence>
         {showHome && (
           <motion.button key="home" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }} whileTap={{ scale: 0.92 }}
-            onClick={() => { setOpen(false); jumpToTop(); if (page !== "home") go("home"); }} aria-label="Go to home page" title="Home"
+            onClick={() => { setOpen(false); jumpToTop(); if (page !== "home") go("home"); }} aria-label={t("Go to home page", "होम पेज पर जाएँ")} title={t("Home", "होम")}
             className="mr-1 grid h-12 w-12 place-items-center rounded-full border border-zari/50 bg-night/90 text-zari shadow-xl shadow-black/40 backdrop-blur transition-colors hover:bg-zari hover:text-night">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" /></svg>
           </motion.button>
@@ -32,12 +34,12 @@ export default function ContactDock() {
       <AnimatePresence>
         {open && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} className="flex flex-col items-end gap-2">
-            {wa && <a href={wa} target="_blank" rel="noopener" className="rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-[#063] shadow-lg">Chat on WhatsApp</a>}
-            {tel && <a href={tel} className="rounded-full bg-zari px-5 py-3 text-sm font-semibold text-night shadow-lg">Call us</a>}
+            {wa && <a href={wa} target="_blank" rel="noopener" className="rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-[#063] shadow-lg">{t("Chat on WhatsApp", "व्हाट्सऐप पर बात करें")}</a>}
+            {tel && <a href={tel} className="rounded-full bg-zari px-5 py-3 text-sm font-semibold text-night shadow-lg">{t("Call us", "कॉल करें")}</a>}
           </motion.div>
         )}
       </AnimatePresence>
-      {(wa || tel) && <motion.button whileTap={{ scale: 0.92 }} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={open ? "Close contact options" : "Contact us"}
+      {(wa || tel) && <motion.button whileTap={{ scale: 0.92 }} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={open ? t("Close contact options", "संपर्क विकल्प बंद करें") : t("Contact us", "संपर्क करें")}
         className="grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-xl shadow-black/40">
         {open
           ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
