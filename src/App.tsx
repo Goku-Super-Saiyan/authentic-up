@@ -2,6 +2,7 @@ import { MotionConfig, motion, useScroll, useSpring } from "framer-motion";
 import Lenis from "lenis";
 import { lazy, Suspense, useEffect } from "react";
 import { smooth, StoreProvider, useStore } from "./store";
+import { LangProvider } from "./i18n";
 import Login from "./components/Login";
 import Enquire from "./components/Enquire";
 import Nav from "./components/Nav";
@@ -86,9 +87,11 @@ export default function App() {
   useSmoothScroll();
   return (
     <MotionConfig reducedMotion="user">
-      <StoreProvider>
-        <Shell />
-      </StoreProvider>
+      <LangProvider>
+        <StoreProvider>
+          <Shell />
+        </StoreProvider>
+      </LangProvider>
     </MotionConfig>
   );
 }

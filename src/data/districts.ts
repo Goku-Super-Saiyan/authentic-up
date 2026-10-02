@@ -2,14 +2,14 @@
 // Coordinates are approximate district headquarters, used to place dots on the craft map.
 
 export type OdopCat = "weave" | "craft" | "make" | "food";
-export const ODOP_CATS: Record<OdopCat, { label: string; color: string }> = {
-  weave: { label: "Textiles & weaves", color: "#F0568C" },
-  craft: { label: "Handicrafts", color: "#FFB627" },
-  make: { label: "Metal, leather & industry", color: "#7FA7FF" },
-  food: { label: "Food & fragrance", color: "#5FD39B" },
+export const ODOP_CATS: Record<OdopCat, { label: string; hi: string; color: string }> = {
+  weave: { label: "Textiles & weaves", hi: "वस्त्र और बुनाई", color: "#F0568C" },
+  craft: { label: "Handicrafts", hi: "हस्तशिल्प", color: "#FFB627" },
+  make: { label: "Metal, leather & industry", hi: "धातु, चमड़ा और उद्योग", color: "#7FA7FF" },
+  food: { label: "Food & fragrance", hi: "खान-पान और सुगंध", color: "#5FD39B" },
 };
 
-export type District = { name: string; product: string; cat: OdopCat; lat: number; lon: number };
+export type District = { name: string; product: string; cat: OdopCat; lat: number; lon: number; nameHi: string; productHi: string };
 
 const raw: [string, string, OdopCat, number, number][] = [
   ["Agra", "Leather products", "make", 27.18, 78.01],
@@ -89,7 +89,87 @@ const raw: [string, string, OdopCat, number, number][] = [
   ["Varanasi", "Banarasi silk sarees", "weave", 25.32, 82.97],
 ];
 
-export const DISTRICTS: District[] = raw.map(([name, product, cat, lat, lon]) => ({ name, product, cat, lat, lon }));
+// District and product names in Hindi.
+const HI: Record<string, [string, string]> = {
+  "Agra": ["आगरा", "चमड़े के उत्पाद"],
+  "Aligarh": ["अलीगढ़", "ताले और हार्डवेयर"],
+  "Ambedkar Nagar": ["अंबेडकर नगर", "वस्त्र उत्पाद"],
+  "Amethi": ["अमेठी", "मूँज उत्पाद"],
+  "Amroha": ["अमरोहा", "वाद्य यंत्र"],
+  "Auraiya": ["औरैया", "देसी घी"],
+  "Ayodhya": ["अयोध्या", "गुड़"],
+  "Azamgarh": ["आज़मगढ़", "काली मिट्टी के बर्तन"],
+  "Baghpat": ["बागपत", "होम फ़र्निशिंग"],
+  "Bahraich": ["बहराइच", "गेहूँ के डंठल की हस्तकला"],
+  "Ballia": ["बलिया", "बिंदी"],
+  "Balrampur": ["बलरामपुर", "दालें"],
+  "Banda": ["बाँदा", "शजर पत्थर शिल्प"],
+  "Barabanki": ["बाराबंकी", "हथकरघा"],
+  "Bareilly": ["बरेली", "ज़री ज़रदोज़ी"],
+  "Basti": ["बस्ती", "काष्ठ शिल्प"],
+  "Bhadohi": ["भदोही", "क़ालीन"],
+  "Bijnor": ["बिजनौर", "काष्ठ शिल्प"],
+  "Budaun": ["बदायूँ", "ज़री ज़रदोज़ी"],
+  "Bulandshahr": ["बुलंदशहर", "खुर्जा के मिट्टी के बर्तन"],
+  "Chandauli": ["चंदौली", "ज़री ज़रदोज़ी"],
+  "Chitrakoot": ["चित्रकूट", "लकड़ी के खिलौने"],
+  "Deoria": ["देवरिया", "सजावटी उत्पाद"],
+  "Etah": ["एटा", "घुँघरू, घंटियाँ और पीतल"],
+  "Etawah": ["इटावा", "वस्त्र उत्पाद"],
+  "Farrukhabad": ["फ़र्रुख़ाबाद", "कपड़े की छपाई"],
+  "Fatehpur": ["फ़तेहपुर", "चादरें"],
+  "Firozabad": ["फ़िरोज़ाबाद", "काँच का सामान"],
+  "Gautam Buddha Nagar": ["गौतम बुद्ध नगर", "रेडीमेड कपड़े"],
+  "Ghaziabad": ["ग़ाज़ियाबाद", "इंजीनियरिंग सामान"],
+  "Ghazipur": ["ग़ाज़ीपुर", "जूट की वॉल हैंगिंग"],
+  "Gonda": ["गोंडा", "दालें"],
+  "Gorakhpur": ["गोरखपुर", "टेराकोटा"],
+  "Hamirpur": ["हमीरपुर", "जूते-चप्पल"],
+  "Hapur": ["हापुड़", "होम फ़र्निशिंग"],
+  "Hardoi": ["हरदोई", "हथकरघा"],
+  "Hathras": ["हाथरस", "हींग"],
+  "Jalaun": ["जालौन", "हाथ से बना काग़ज़"],
+  "Jaunpur": ["जौनपुर", "ऊनी दरियाँ"],
+  "Jhansi": ["झाँसी", "मुलायम खिलौने"],
+  "Kannauj": ["कन्नौज", "इत्र और सुगंध"],
+  "Kanpur Dehat": ["कानपुर देहात", "एल्युमिनियम के बर्तन"],
+  "Kanpur Nagar": ["कानपुर नगर", "चमड़े के उत्पाद"],
+  "Kasganj": ["कासगंज", "ज़री ज़रदोज़ी"],
+  "Kaushambi": ["कौशाम्बी", "केले के उत्पाद"],
+  "Kushinagar": ["कुशीनगर", "केले के रेशे के उत्पाद"],
+  "Lakhimpur Kheri": ["लखीमपुर खीरी", "थारू जनजातीय शिल्प"],
+  "Lalitpur": ["ललितपुर", "ज़री सिल्क साड़ियाँ"],
+  "Lucknow": ["लखनऊ", "चिकनकारी"],
+  "Maharajganj": ["महराजगंज", "फ़र्नीचर"],
+  "Mahoba": ["महोबा", "गौरा पत्थर शिल्प"],
+  "Mainpuri": ["मैनपुरी", "तारकशी कला"],
+  "Mathura": ["मथुरा", "सैनिटरी फ़िटिंग"],
+  "Mau": ["मऊ", "पावरलूम वस्त्र"],
+  "Meerut": ["मेरठ", "खेल का सामान"],
+  "Mirzapur": ["मिर्ज़ापुर", "क़ालीन और दरी"],
+  "Moradabad": ["मुरादाबाद", "धातु शिल्प"],
+  "Muzaffarnagar": ["मुज़फ़्फ़रनगर", "गुड़"],
+  "Pilibhit": ["पीलीभीत", "बाँसुरी"],
+  "Pratapgarh": ["प्रतापगढ़", "आँवला उत्पाद"],
+  "Prayagraj": ["प्रयागराज", "मूँज उत्पाद"],
+  "Raebareli": ["रायबरेली", "लकड़ी का काम"],
+  "Rampur": ["रामपुर", "एप्लिक और पैचवर्क"],
+  "Saharanpur": ["सहारनपुर", "लकड़ी पर नक्काशी"],
+  "Sambhal": ["संभल", "सींग और हड्डी शिल्प"],
+  "Sant Kabir Nagar": ["संत कबीर नगर", "पीतल के बर्तन"],
+  "Shahjahanpur": ["शाहजहाँपुर", "क़ालीन"],
+  "Shamli": ["शामली", "लोहे के रिम और धुरे"],
+  "Shravasti": ["श्रावस्ती", "जनजातीय शिल्प"],
+  "Siddharthnagar": ["सिद्धार्थनगर", "काला नमक चावल"],
+  "Sitapur": ["सीतापुर", "दरियाँ"],
+  "Sonbhadra": ["सोनभद्र", "क़ालीन"],
+  "Sultanpur": ["सुल्तानपुर", "मूँज उत्पाद"],
+  "Unnao": ["उन्नाव", "ज़री ज़रदोज़ी"],
+  "Varanasi": ["वाराणसी", "बनारसी सिल्क साड़ियाँ"],
+};
+
+export const DISTRICTS: District[] = raw.map(([name, product, cat, lat, lon]) => ({ name, product, cat, lat, lon, nameHi: HI[name]?.[0] ?? name, productHi: HI[name]?.[1] ?? product }));
+export const districtHi = (name: string) => HI[name]?.[0] ?? name;
 
 // Districts whose names stay labelled on the map.
 export const LANDMARKS = ["Varanasi", "Lucknow", "Agra", "Prayagraj", "Kanpur Nagar", "Bhadohi", "Kannauj", "Firozabad", "Moradabad", "Gorakhpur", "Meerut", "Jhansi", "Saharanpur", "Bareilly", "Mathura"];

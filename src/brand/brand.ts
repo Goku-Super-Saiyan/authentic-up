@@ -10,18 +10,25 @@ type Brand = {
   eyebrow: string; // the small line above the hero title
   heroLine: string; // the line beside "UP" in the hero
   footerLine: string;
+  hi: { eyebrow: string; heroLine: string; footerLine: string }; // Hindi versions; the slogan stays in English
 };
 
 const BRANDS: Record<Brand["key"], Brand> = {
   incredible: { key: "incredible", word: "Incredible", name: "Incredible UP", hindi: "अतुल्य उत्तर प्रदेश", domain: "incredibleup.example",
     eyebrow: "उत्तर प्रदेश · 75 districts · 75 crafts · one bazaar",
     heroLine: "Banarasi silk, Bhadohi carpets, Lucknow chikan and the One District One Product craft of every district, bought straight from the people who make it.",
-    footerLine: "The crafts of Uttar Pradesh, from the people who make them." },
+    footerLine: "The crafts of Uttar Pradesh, from the people who make them.",
+    hi: { eyebrow: "उत्तर प्रदेश · 75 ज़िले · 75 शिल्प · एक बाज़ार",
+      heroLine: "बनारसी सिल्क, भदोही के क़ालीन, लखनऊ की चिकनकारी और हर ज़िले का 'एक ज़िला एक उत्पाद' शिल्प, सीधे उन्हें बनाने वालों से ख़रीदें।",
+      footerLine: "उत्तर प्रदेश के शिल्प, उन्हें बनाने वालों से।" } },
   authentic: { key: "authentic", word: "Authentic", name: "Authentic UP", hindi: "यूपी की प्रामाणिक पहचान", domain: "authenticup.example",
     slogan: "From their hands to your home",
     eyebrow: "One State. 75 Districts. Countless Stories",
     heroLine: "Every Banarasi weave, every Bhadohi knot, every stitch of Lucknow chikan carries a family's story, passed down for generations. Bring one home, and keep that story alive.",
-    footerLine: "Every piece is made by hand in Uttar Pradesh and sent to you by the family who made it." },
+    footerLine: "Every piece is made by hand in Uttar Pradesh and sent to you by the family who made it.",
+    hi: { eyebrow: "एक राज्य। 75 ज़िले। अनगिनत कहानियाँ।",
+      heroLine: "हर बनारसी बुनाई, भदोही की हर गाँठ, लखनऊ की चिकनकारी का हर टाँका एक परिवार की कहानी है, जो पीढ़ियों से चली आ रही है। इसे अपने घर लाइए, और उस कहानी को ज़िंदा रखिए।",
+      footerLine: "हर चीज़ उत्तर प्रदेश में हाथ से बनती है, और उसे बनाने वाला परिवार ही आप तक भेजता है।" } },
 };
 
 // import.meta.env is undefined when the logo sheet scripts import this under plain Node.
