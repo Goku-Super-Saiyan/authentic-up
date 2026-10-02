@@ -31,7 +31,7 @@ const pageFromHash = (): Page => {
 const Ctx = createContext<Store | null>(null);
 const KEY = "iup-bag-v2";
 export const ACCOUNT_KEY = "iup-account";
-export type Account = { id: string; email: string; name: string; role: "shopper" | "artisan"; session?: { access_token?: string; refresh_token?: string; expires_at?: number } };
+export type Account = { id: string; email: string; phone?: string; name: string; role: "shopper" | "artisan"; admin?: boolean; session?: { access_token?: string; refresh_token?: string; expires_at?: number } };
 export function loadAccount(): Account | null {
   try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY) || "null"); } catch { return null; }
 }

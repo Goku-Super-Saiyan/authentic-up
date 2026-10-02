@@ -4,7 +4,9 @@ import { ACCOUNT_KEY, loadAccount, useStore, type Account } from "../store";
 import { Emblem } from "./Logo";
 
 type Role = "shopper" | "artisan";
-type Step = "email" | "code" | "done";
+type Mode = "signup" | "login";
+type Method = "email" | "phone";
+type Step = "form" | "code" | "done";
 
 function OtpBoxes({ value, onChange, length }: { value: string; onChange: (v: string) => void; length: number }) {
   const refs = useRef<(HTMLInputElement | null)[]>([]);
@@ -17,6 +19,7 @@ function OtpBoxes({ value, onChange, length }: { value: string; onChange: (v: st
           id={`otp-${i}`}
           ref={(el) => { refs.current[i] = el; }}
           inputMode="numeric"
+          autoComplete={i === 0 ? "one-time-code" : "off"}
           maxLength={1}
           aria-label={`Digit ${i + 1}`}
           value={value[i] ?? ""}
@@ -38,24 +41,49 @@ async function callAuth(body: Record<string, string>) {
   try {
     const r = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await r.json().catch(() => ({}));
-    return r.ok ? { data } : { error: (data as { error?: string }).error || "Something went wrong. Please try again." };
+    return r.ok ? { data } : { error: (data as { error?: string }).error || "Something went wrong. Please try again.", code: (data as { code?: string }).code };
   } catch {
     return { error: "We couldn't reach the server. Check your connection and try again." };
   }
 }
 
+function Segmented<T extends string>({ value, options, onChange, id, label }: { value: T; options: [T, string][]; onChange: (v: T) => void; id: string; label: string }) {
+  return (
+    <div className="grid rounded-full border border-white/10 bg-night/50 p-1" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }} role="tablist" aria-label={label}>
+      {options.map(([v, text]) => (
+        <button key={v} type="button" role="tab" aria-selected={value === v} onClick={() => onChange(v)} className="relative h-10 rounded-full text-sm font-semibold">
+          {value === v && <motion.span layoutId={id} className="absolute inset-0 rounded-full bg-zari" transition={{ type: "spring", stiffness: 400, damping: 32 }} />}
+          <span className={`relative ${value === v ? "text-night" : "text-ivory/75"}`}>{text}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const field = "h-12 rounded-xl border border-white/15 bg-white/5 px-4 text-[16px] text-ivory outline-none placeholder:text-ivory/35 focus:border-zari";
+
 export default function Login() {
   const { setUser, go, say } = useStore();
   const [account, setAccount] = useState<Account | null>(loadAccount);
+  const [mode, setMode] = useState<Mode>("signup");
+  const [method, setMethod] = useState<Method>("email");
+  const [phoneOn, setPhoneOn] = useState(false);
   const [role, setRole] = useState<Role>("shopper");
-  const [step, setStep] = useState<Step>(account ? "done" : "email");
+  const [step, setStep] = useState<Step>(account ? "done" : "form");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [digits, setDigits] = useState(6);
   const [error, setError] = useState("");
+  const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [timer, setTimer] = useState(30);
+
+  // Mobile sign-in shows only once SMS is set up on the server.
+  useEffect(() => {
+    fetch("/api/auth").then((r) => r.json()).then((d) => setPhoneOn(!!d.phone)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (step !== "code" || timer <= 0) return;
@@ -63,20 +91,29 @@ export default function Login() {
     return () => clearTimeout(t);
   }, [step, timer]);
 
+  const target: Record<string, string> = method === "phone" ? { phone } : { email: email.trim() };
+  const shownTarget = method === "phone" ? `+91 ${phone.slice(0, 5)} ${phone.slice(5)}` : email.trim();
+  const switchMode = (m: Mode) => { setMode(m); setError(""); setNote(""); };
+
   const requestCode = async () => {
     setBusy(true);
-    const { data, error } = await callAuth({ action: "send", email: email.trim(), name: name.trim(), role });
+    const res = await callAuth({ action: "send", intent: mode, ...target, name: name.trim(), role });
     setBusy(false);
-    if (error) { setError(error); return false; }
-    setDigits(Number((data as { digits?: number }).digits) || 6);
-    setError(""); setCode(""); setTimer(30);
+    if (res.error) {
+      if (res.code === "no_account") { setMode("signup"); setError(""); setNote(res.error); return false; }
+      if (res.code === "exists") { setMode("login"); setError(""); setNote(res.error); return false; }
+      setError(res.error); return false;
+    }
+    setDigits(Number((res.data as { digits?: number }).digits) || 6);
+    setError(""); setNote(""); setCode(""); setTimer(30);
     return true;
   };
   const sendCode = async (e: FormEvent) => {
     e.preventDefault();
     if (busy) return;
-    if (!name.trim()) { setError("Tell us your name so makers know who they are packing for."); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Enter a valid email address."); return; }
+    if (mode === "signup" && !name.trim()) { setError("Tell us your name so makers know who they are packing for."); return; }
+    if (method === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("Enter a valid email address."); return; }
+    if (method === "phone" && !/^[6-9]\d{9}$/.test(phone)) { setError("Enter a 10-digit Indian mobile number starting with 6, 7, 8 or 9."); return; }
     if (await requestCode()) setStep("code");
   };
   const resend = async () => { if (await requestCode()) say("A new code is on its way"); };
@@ -85,18 +122,23 @@ export default function Login() {
     if (busy) return;
     if (code.length < digits) { setError(`Enter all ${digits} digits of the code.`); return; }
     setBusy(true);
-    const { data, error } = await callAuth({ action: "verify", email: email.trim(), code, name: name.trim(), role });
+    const res = await callAuth({ action: "verify", ...target, code, name: mode === "signup" ? name.trim() : "", role });
     setBusy(false);
-    if (error) { setError(error); return; }
-    const d = data as { user: Omit<Account, "session">; session: Account["session"] };
-    const acc: Account = { ...d.user, session: d.session };
+    if (res.error) { setError(res.error); return; }
+    const d = res.data as { user: Omit<Account, "session">; session: Account["session"] | null };
+    const acc: Account = { ...d.user, session: d.session ?? undefined };
     try { localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc)); } catch { /* storage unavailable */ }
     setAccount(acc); setError(""); setStep("done");
     const first = acc.name.split(" ")[0];
     setUser(first);
-    say(`Welcome, ${first}`);
+    say(mode === "signup" ? `Welcome to the bazaar, ${first}` : `Welcome back, ${first}`);
   };
-  const logOut = () => { setUser(null); setAccount(null); setCode(""); setStep("email"); say("You're logged out"); };
+  const logOut = () => { setUser(null); setAccount(null); setCode(""); setMode("login"); setStep("form"); say("You're logged out"); };
+
+  const heading = step === "done" ? "You're in" : mode === "signup" ? "Create your account" : "Welcome back";
+  const sub = step === "done" ? "You stay signed in on this device."
+    : mode === "signup" ? `New here? Sign up in a minute. We'll ${method === "phone" ? "text" : "email"} you a code, no password needed.`
+    : `Log in with the ${method === "phone" ? "mobile number" : "email"} you signed up with. We'll send you a code.`;
 
   return (
     <section className="relative min-h-[100svh] overflow-hidden pt-16">
@@ -112,46 +154,70 @@ export default function Login() {
 
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="w-full rounded-[28px] border border-white/10 bg-dusk/80 p-6 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-9">
           <div className="lg:hidden"><Emblem className="mb-6 h-24 w-20" animated /></div>
-          <h2 className="font-display text-4xl">{step === "done" ? "You're in" : "Log in or sign up"}</h2>
-          <p className="mt-2 text-ivory/65">{step === "done" ? "You stay signed in on this device." : "One login for buyers and makers. We'll email you a code, no password needed."}</p>
 
-          {step !== "done" && (
-            <div className="mt-7 grid grid-cols-2 rounded-full border border-white/10 bg-night/50 p-1" role="tablist" aria-label="Account type">
-              {(["shopper", "artisan"] as Role[]).map((r) => (
-                <button key={r} role="tab" aria-selected={role === r} onClick={() => setRole(r)} className="relative h-10 rounded-full text-sm font-semibold">
-                  {role === r && <motion.span layoutId="role" className="absolute inset-0 rounded-full bg-zari" transition={{ type: "spring", stiffness: 400, damping: 32 }} />}
-                  <span className={`relative ${role === r ? "text-night" : "text-ivory/75"}`}>{r === "shopper" ? "I'm buying" : "I'm a maker"}</span>
+          {step === "form" && (
+            <div className="mb-7 flex border-b border-white/10" role="tablist" aria-label="Sign up or log in">
+              {([["signup", "Sign up"], ["login", "Log in"]] as [Mode, string][]).map(([m, text]) => (
+                <button key={m} role="tab" aria-selected={mode === m} onClick={() => switchMode(m)} className={`relative flex-1 pb-3 text-base font-semibold transition ${mode === m ? "text-zari" : "text-ivory/55 hover:text-ivory"}`}>
+                  {text}
+                  {mode === m && <motion.span layoutId="mode-line" className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-zari" />}
                 </button>
               ))}
             </div>
           )}
 
+          <h2 className="font-display text-4xl">{heading}</h2>
+          <p className="mt-2 text-ivory/65">{sub}</p>
+
           <AnimatePresence mode="wait">
-            {step === "email" && (
-              <motion.form key="email" onSubmit={sendCode} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="mt-7 grid gap-4" noValidate>
-                <label className="grid gap-1.5 text-sm text-ivory/75" htmlFor="login-name">
-                  {role === "artisan" ? "Your name or your unit's name" : "Your name"}
-                  <input id="login-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder={role === "artisan" ? "e.g. Madanpura Weavers Collective" : "e.g. Ananya Singh"} className="h-12 rounded-xl border border-white/15 bg-white/5 px-4 text-[16px] text-ivory outline-none placeholder:text-ivory/35 focus:border-zari" />
-                </label>
-                <label className="grid gap-1.5 text-sm text-ivory/75" htmlFor="login-email">
-                  Email address
-                  <input id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} inputMode="email" autoComplete="email" placeholder="you@example.com" className="h-12 rounded-xl border border-white/15 bg-white/5 px-4 text-[16px] text-ivory outline-none placeholder:text-ivory/35 focus:border-zari" />
-                </label>
+            {step === "form" && (
+              <motion.form key={`form-${mode}`} onSubmit={sendCode} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="mt-7 grid gap-4" noValidate>
+                {mode === "signup" && (
+                  <>
+                    <Segmented id="role" label="Account type" value={role} onChange={setRole} options={[["shopper", "I'm buying"], ["artisan", "I'm a maker"]]} />
+                    <label className="grid gap-1.5 text-sm text-ivory/75" htmlFor="login-name">
+                      {role === "artisan" ? "Your name or your unit's name" : "Your name"}
+                      <input id="login-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder={role === "artisan" ? "e.g. Madanpura Weavers Collective" : "e.g. Ananya Singh"} className={field} />
+                    </label>
+                  </>
+                )}
+                {phoneOn && <Segmented id="method" label="Sign in with" value={method} onChange={(m) => { setMethod(m); setError(""); }} options={[["email", "Email"], ["phone", "Mobile number"]]} />}
+                {method === "email" ? (
+                  <label className="grid gap-1.5 text-sm text-ivory/75" htmlFor="login-email">
+                    Email address
+                    <input id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} inputMode="email" autoComplete="email" placeholder="you@example.com" className={field} />
+                  </label>
+                ) : (
+                  <label className="grid gap-1.5 text-sm text-ivory/75" htmlFor="login-phone">
+                    Mobile number
+                    <span className="flex h-12 items-center rounded-xl border border-white/15 bg-white/5 focus-within:border-zari">
+                      <span className="border-r border-white/10 px-4 font-mono text-ivory/70">+91</span>
+                      <input id="login-phone" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} inputMode="numeric" autoComplete="tel-national" placeholder="98765 43210" className="h-full min-w-0 flex-1 bg-transparent px-4 text-[16px] tracking-wider text-ivory outline-none placeholder:text-ivory/35" />
+                    </span>
+                  </label>
+                )}
+                {note && <p className="rounded-xl border border-zari/30 bg-zari/10 px-4 py-3 text-sm text-ivory/85" role="status">{note}</p>}
                 {error && <p className="text-sm text-sindoor" role="alert">{error}</p>}
-                <motion.button whileTap={{ scale: 0.97 }} type="submit" disabled={busy} className="mt-2 h-12 rounded-full bg-zari font-semibold text-night disabled:opacity-60">{busy ? "Sending code…" : "Email me a code"}</motion.button>
-                <p className="text-center text-xs text-ivory/45">By continuing you agree to our <button type="button" onClick={() => go("terms")} className="underline underline-offset-2 hover:text-zari">terms</button> and <button type="button" onClick={() => go("privacy")} className="underline underline-offset-2 hover:text-zari">privacy policy</button>.</p>
+                <motion.button whileTap={{ scale: 0.97 }} type="submit" disabled={busy} className="mt-2 h-12 rounded-full bg-zari font-semibold text-night disabled:opacity-60">
+                  {busy ? "Sending code…" : mode === "signup" ? "Create account" : method === "phone" ? "Text me a code" : "Email me a code"}
+                </motion.button>
+                <p className="text-center text-sm text-ivory/60">
+                  {mode === "signup" ? "Already have an account? " : "New to the bazaar? "}
+                  <button type="button" onClick={() => switchMode(mode === "signup" ? "login" : "signup")} className="font-semibold text-zari hover:underline">{mode === "signup" ? "Log in" : "Sign up"}</button>
+                </p>
+                {mode === "signup" && <p className="text-center text-xs text-ivory/45">By signing up you agree to our <button type="button" onClick={() => go("terms")} className="underline underline-offset-2 hover:text-zari">terms</button> and <button type="button" onClick={() => go("privacy")} className="underline underline-offset-2 hover:text-zari">privacy policy</button>.</p>}
               </motion.form>
             )}
             {step === "code" && (
               <motion.form key="code" onSubmit={verify} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="mt-7 grid gap-5" noValidate>
-                <p className="text-sm text-ivory/75">Enter the {digits}-digit code we emailed to <b className="whitespace-nowrap text-ivory">{email.trim()}</b>. <button type="button" onClick={() => { setError(""); setStep("email"); }} className="text-zari underline-offset-4 hover:underline">Change email</button></p>
+                <p className="text-sm text-ivory/75">Enter the {digits}-digit code we {method === "phone" ? "texted" : "emailed"} to <b className="whitespace-nowrap text-ivory">{shownTarget}</b>. <button type="button" onClick={() => { setError(""); setStep("form"); }} className="text-zari underline-offset-4 hover:underline">Change</button></p>
                 <OtpBoxes value={code} onChange={setCode} length={digits} />
                 {error && <p className="text-sm text-sindoor" role="alert">{error}</p>}
-                <motion.button whileTap={{ scale: 0.97 }} type="submit" disabled={busy} className="h-12 rounded-full bg-zari font-semibold text-night disabled:opacity-60">{busy ? "Checking…" : "Verify and continue"}</motion.button>
+                <motion.button whileTap={{ scale: 0.97 }} type="submit" disabled={busy} className="h-12 rounded-full bg-zari font-semibold text-night disabled:opacity-60">{busy ? "Checking…" : mode === "signup" ? "Verify and create account" : "Verify and log in"}</motion.button>
                 <p className="text-sm text-ivory/55">
                   {timer > 0 ? <>Resend code in <span className="tabular-nums">0:{String(timer).padStart(2, "0")}</span></> : <button type="button" disabled={busy} onClick={resend} className="text-zari hover:underline">Resend code</button>}
                 </p>
-                <p className="text-xs text-ivory/45">Can't find it? Check your spam or promotions folder.</p>
+                {method === "email" && <p className="text-xs text-ivory/45">Can't find it? Check your spam or promotions folder.</p>}
               </motion.form>
             )}
             {step === "done" && (
@@ -160,7 +226,7 @@ export default function Login() {
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
                 </motion.div>
                 <p className="text-lg">Signed in as <b>{account?.name}</b>{account?.role === "artisan" ? ", maker account" : ""}.</p>
-                <p className="-mt-2 [overflow-wrap:anywhere] text-sm text-ivory/55">{account?.email}</p>
+                <p className="-mt-2 text-sm text-ivory/55 [overflow-wrap:anywhere]">{account?.email || account?.phone}</p>
                 <button onClick={() => go("home")} className="mt-3 h-12 rounded-full bg-zari font-semibold text-night">{account?.role === "artisan" ? "Go to the bazaar" : "Continue shopping"}</button>
                 <button onClick={logOut} className="h-12 rounded-full border border-white/15 font-semibold hover:border-zari">Log out</button>
               </motion.div>
