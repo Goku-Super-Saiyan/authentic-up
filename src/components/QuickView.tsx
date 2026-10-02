@@ -15,6 +15,10 @@ export default function QuickView() {
   const photos = p?.photos ?? [];
   const { t, lang } = useLang();
   const x = p ? productText(p, lang) : null;
+  // Built-in pieces have no price yet, so the WhatsApp button asks for one instead of ordering.
+  const wa = p && x ? waLink(p.price
+    ? t(`Namaste! I'd like to order: ${p.name} (${inr(p.price)}) by ${p.maker}.`, `नमस्ते! मुझे यह ऑर्डर करना है: ${x.name} (${inr(p.price)}), ${x.maker}।`)
+    : t(`Namaste! Could you share the price of ${p.name} by ${p.maker}?`, `नमस्ते! क्या आप ${x.name} (${x.maker}) का दाम बता सकते हैं?`)) : null;
 
   useEffect(() => {
     if (!p) return;
@@ -57,7 +61,12 @@ export default function QuickView() {
                 </button>
               </div>
               <h2 className="mt-3 font-display text-[clamp(32px,4vw,46px)] leading-[1.02]">{x.name}</h2>
-              <p className="mt-3 font-display text-3xl text-zari">{inr(p.price)}</p>
+              {p.price
+                ? <p className="mt-3 font-display text-3xl text-zari">{inr(p.price)}</p>
+                : <div className="mt-3">
+                    <p className="font-display text-2xl text-zari">{t("Price on request", "दाम पूछें")}</p>
+                    <p className="mt-1 text-sm text-ivory/60">{t("Each piece is priced by the family that makes it. Ask us and we'll share the current price.", "हर चीज़ का दाम उसे बनाने वाला परिवार तय करता है। हमसे पूछिए, हम आज का दाम बताएँगे।")}</p>
+                  </div>}
               <p className="mt-5 text-[17px] leading-relaxed text-ivory/80">{x.story}</p>
               <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-white/10 pt-5 text-sm">
                 <div className="col-span-2"><dt className="font-mono text-[10px] uppercase tracking-widest text-mist">{t("Made by", "बनाने वाले")}</dt><dd className="mt-0.5 font-semibold">{x.maker}</dd></div>
@@ -65,8 +74,11 @@ export default function QuickView() {
               </dl>
               <div className="mt-auto flex flex-wrap gap-3 pt-8">
                 <motion.button whileTap={{ scale: 0.96 }} onClick={() => add(p.id)} className="h-12 flex-1 rounded-full bg-zari px-7 font-semibold text-night">{t("Add to bag", "बैग में डालें")}</motion.button>
-                {waLink(t(`Namaste! I'd like to order: ${p.name} (${inr(p.price)}) by ${p.maker}.`, `नमस्ते! मुझे यह ऑर्डर करना है: ${x.name} (${inr(p.price)}), ${x.maker}।`)) && (
-                  <a href={waLink(t(`Namaste! I'd like to order: ${p.name} (${inr(p.price)}) by ${p.maker}.`, `नमस्ते! मुझे यह ऑर्डर करना है: ${x.name} (${inr(p.price)}), ${x.maker}।`))!} target="_blank" rel="noopener" aria-label={t("Order on WhatsApp", "व्हाट्सऐप पर ऑर्डर करें")} className="grid h-12 w-12 place-items-center rounded-full bg-[#25D366] text-white">
+                {!p.price && wa && (
+                  <a href={wa} target="_blank" rel="noopener" className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-[#25D366] px-6 font-semibold text-white">{t("Ask for price", "दाम पूछें")}</a>
+                )}
+                {p.price && wa && (
+                  <a href={wa} target="_blank" rel="noopener" aria-label={t("Order on WhatsApp", "व्हाट्सऐप पर ऑर्डर करें")} className="grid h-12 w-12 place-items-center rounded-full bg-[#25D366] text-white">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z" /></svg>
                   </a>
                 )}

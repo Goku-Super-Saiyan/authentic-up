@@ -28,6 +28,9 @@ alter table enquiries add constraint enquiries_status_check check (status in ('n
 
 alter table products add column if not exists place text;           -- e.g. Madanpura, Varanasi
 alter table products add column if not exists featured boolean not null default false;
+-- 0 means "Price on request": the shop shows that until the maker confirms a price.
+alter table products drop constraint if exists products_price_inr_check;
+alter table products add constraint products_price_inr_check check (price_inr >= 0);
 
 
 -- Visitor counter for the footer (also in visitor-counter.sql).

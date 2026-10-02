@@ -63,8 +63,9 @@ function Card({ p }: { p: Product }) {
         <div className="min-w-0">
           <h3 className="text-[17px] font-semibold leading-snug">{x.name}</h3>
           <p className="text-sm text-mist">{x.place}</p>
+          {!p.price && <p className="mt-1 text-sm font-semibold text-zari">{t("Price on request", "दाम पूछें")}</p>}
         </div>
-        <span className="whitespace-nowrap font-display text-xl text-zari">{inr(p.price)}</span>
+        {p.price ? <span className="whitespace-nowrap font-display text-xl text-zari">{inr(p.price)}</span> : null}
       </div>
       <p className="mt-1.5 font-mono text-[11px] uppercase tracking-wide text-ivory/50">{x.spec}</p>
       <motion.button
