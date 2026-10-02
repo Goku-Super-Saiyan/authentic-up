@@ -15,7 +15,7 @@
   --color-mist: #B7A8CF;
   --font-display: "Rozha One", "Noto Serif Devanagari", Georgia, serif;
   --font-body: "Mukta", "Noto Sans Devanagari", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --font-mono: "IBM Plex Mono", "Mukta", ui-monospace, Menlo, monospace;
 }
 
 :root { color-scheme: dark; }
@@ -85,3 +85,8 @@ html.lenis, html.lenis body { height: auto; }
   background: linear-gradient(180deg, transparent, rgba(73,179,194,.05), transparent); animation: scan 9s linear infinite; }
 @keyframes scan { to { transform: translateY(calc(100vh + 120px)); } }
 .no-scrollbar { scrollbar-width: none; } .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Hindi: letter-spacing pulls Devanagari letters apart, so the tracked labels go back to normal spacing. */
+:lang(hi) [class*="tracking-"], :lang(hi) .uppercase { letter-spacing: normal; }
+/* The small mono labels are hard to read in Devanagari, so in Hindi they use the body font a little larger. */
+:lang(hi) .font-mono.uppercase { font-family: var(--font-body); font-size: max(13px, 1em); font-weight: 500; }
