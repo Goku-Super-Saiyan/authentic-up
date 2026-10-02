@@ -1,8 +1,9 @@
 import type { ArtKind } from "../art/crafts";
 
 // Catalogue listings. Makers are collectives; each price is confirmed with the maker before payment.
+export type PID = number | string;
 export type Product = {
-  id: number;
+  id: PID;
   name: string;
   place: string;
   district: string;
@@ -17,7 +18,28 @@ export type Product = {
   details: string[];
   // Real product photo, e.g. "products/1.jpg" in public/. Falls back to drawn art when absent.
   photo?: string;
+  photos?: string[];
+  featured?: boolean;
 };
+
+// A product row from the admin page (Supabase), shaped like the built-in listings.
+export type ProductRow = {
+  id: string; name: string; district: string; place?: string | null; category: string; price_inr: number; stock?: number;
+  spec?: string | null; story?: string | null; details?: string[]; tags?: string[]; photos?: string[]; featured?: boolean;
+  makers?: { name?: string } | null;
+};
+const ART_BY_CAT: Record<string, ArtKind> = {
+  "Silk & sarees": "saree", "Carpets & dari": "carpet", Embroidery: "chikan", "Glass & metal": "brass", "Clay, stone & wood": "pottery", Attar: "attar",
+};
+const TAGS = ["GI tag", "ODOP", "Artisan-direct"] as const;
+export function fromRow(r: ProductRow): Product {
+  const seed = [...r.id].reduce((a, c) => a + c.charCodeAt(0), 0) % 9 + 1;
+  return {
+    id: r.id, name: r.name, place: r.place || r.district, district: r.district, art: ART_BY_CAT[r.category] ?? "saree", seed,
+    price: r.price_inr, cat: r.category, spec: r.spec || "", tags: (r.tags ?? []).filter((t): t is Product["tags"][number] => (TAGS as readonly string[]).includes(t)),
+    maker: r.makers?.name || "", story: r.story || "", details: r.details ?? [], photo: r.photos?.[0], photos: r.photos ?? [], featured: !!r.featured,
+  };
+}
 
 export const CATEGORIES = ["All", "Silk & sarees", "Carpets & dari", "Embroidery", "Glass & metal", "Clay, stone & wood", "Attar"] as const;
 

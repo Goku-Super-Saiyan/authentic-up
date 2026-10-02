@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
-import { CATEGORIES, PRODUCTS, type Product } from "../data/catalog";
+import { CATEGORIES, type Product } from "../data/catalog";
 import { inr, useStore } from "../store";
 import ProductArt from "./ProductArt";
 
@@ -80,8 +80,8 @@ function Card({ p }: { p: Product }) {
 }
 
 export default function Bazaar() {
-  const { filter, setFilter } = useStore();
-  const list = PRODUCTS.filter((p) => filter === "All" || p.cat === filter);
+  const { filter, setFilter, products } = useStore();
+  const list = products.filter((p) => filter === "All" || p.cat === filter);
   return (
     <section id="bazaar" className="relative scroll-mt-16 bg-gradient-to-b from-night via-[#160A2C] to-night py-[clamp(72px,10vw,140px)]">
       <div className="mx-auto max-w-[1320px] px-4 sm:px-8">

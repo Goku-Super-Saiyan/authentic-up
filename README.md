@@ -49,3 +49,11 @@ Both Vercel projects import this repo, so every push to `main` updates both.
 5. **Email**: in Resend, add the domain and copy its SPF and DKIM records into GoDaddy. Enquiries from `/api/enquiry` are saved to Supabase and emailed to `ENQUIRY_TO`.
 
 Contact details (email, WhatsApp, phone, address) come from the `VITE_` variables. The WhatsApp button and the "order on WhatsApp" links only appear once `VITE_WHATSAPP` is set.
+
+## Accounts, admin and orders
+
+- **Login** (`#login`, `api/auth.ts`): Sign up and Log in with an emailed code (Supabase Auth, sent through Resend). Mobile codes switch on with `MESSAGECENTRAL_CUSTOMER_ID` and `MESSAGECENTRAL_PASSWORD` (no DLT needed), or `MSG91_AUTH_KEY` and `MSG91_TEMPLATE_ID` once DLT is registered. Sign-ups are saved to the `customers` table.
+- **Admin dashboard** (`#admin`, `src/admin/`, `api/admin.ts`): open to email logins listed in `ENQUIRY_TO` or `ADMIN_EMAILS` (comma separated). It manages enquiries, orders, products with photo upload, makers and customers, and shows service health. It loads as a separate chunk, so shoppers never download it.
+- **Products** (`api/products.ts`): once any product is live in Supabase, the store shows those instead of the built-in pieces in `src/data/catalog.ts`.
+- **Orders** (`api/orders.ts`): "Place order" saves the bag with an `ORD-` reference and opens WhatsApp to confirm it.
+- Run `supabase/admin-setup.sql` once after `schema.sql`.
