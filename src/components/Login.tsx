@@ -75,6 +75,7 @@ export default function Login() {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [digits, setDigits] = useState(6);
+  const [ref, setRef] = useState("");
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -105,6 +106,7 @@ export default function Login() {
       setError(res.error); return false;
     }
     setDigits(Number((res.data as { digits?: number }).digits) || 6);
+    setRef(String((res.data as { ref?: string }).ref ?? ""));
     setError(""); setNote(""); setCode(""); setTimer(30);
     return true;
   };
@@ -122,7 +124,7 @@ export default function Login() {
     if (busy) return;
     if (code.length < digits) { setError(`Enter all ${digits} digits of the code.`); return; }
     setBusy(true);
-    const res = await callAuth({ action: "verify", ...target, code, name: mode === "signup" ? name.trim() : "", role });
+    const res = await callAuth({ action: "verify", ...target, code, ref, name: mode === "signup" ? name.trim() : "", role });
     setBusy(false);
     if (res.error) { setError(res.error); return; }
     const d = res.data as { user: Omit<Account, "session">; session: Account["session"] | null };
