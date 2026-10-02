@@ -8,6 +8,18 @@ type Body = { kind?: string; name?: string; email?: string; phone?: string; craf
 const clean = (v: unknown, max = 500) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
+// Best-effort limit per server instance, so nobody can flood the inbox: 5 enquiries per 10 minutes from one address.
+const recent = new Map<string, number[]>();
+function tooMany(ip: string): boolean {
+  if (!ip) return false;
+  const now = Date.now();
+  const list = (recent.get(ip) ?? []).filter((t) => now - t < 600_000);
+  if (list.length >= 5) return true;
+  recent.set(ip, [...list, now]);
+  if (recent.size > 5000) recent.clear();
+  return false;
+}
+
 export async function POST(req: Request): Promise<Response> {
   let b: Body;
   try { b = await req.json(); } catch { return Response.json({ error: "Send JSON" }, { status: 400 }); }
@@ -20,6 +32,8 @@ export async function POST(req: Request): Promise<Response> {
   };
   if (!e.name || !/^\S+@\S+\.\S+$/.test(e.email) || e.message.length < 10)
     return Response.json({ error: "Add your name, a valid email and a few words about what you need." }, { status: 422 });
+  if (tooMany((req.headers.get("x-forwarded-for") || "").split(",")[0].trim()))
+    return Response.json({ error: "You've sent several enquiries already. Please wait a few minutes, or message us on WhatsApp." }, { status: 429 });
 
   const reference = "IUP-" + Math.floor(100000 + Math.random() * 900000);
   const env = process.env;

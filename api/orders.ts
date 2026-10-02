@@ -5,6 +5,18 @@
 type Item = { id?: unknown; name?: unknown; place?: unknown; qty?: unknown; price?: unknown };
 const clean = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
+// Best-effort limit per server instance: 10 saved orders per 10 minutes from one address, so the admin list can't be flooded.
+const recent = new Map<string, number[]>();
+function tooMany(ip: string): boolean {
+  if (!ip) return false;
+  const now = Date.now();
+  const list = (recent.get(ip) ?? []).filter((t) => now - t < 600_000);
+  if (list.length >= 10) return true;
+  recent.set(ip, [...list, now]);
+  if (recent.size > 5000) recent.clear();
+  return false;
+}
+
 export async function POST(req: Request): Promise<Response> {
   let b: { reference?: string; items?: Item[]; name?: string; email?: string; phone?: string; customer_id?: string; website?: string };
   try { b = await req.json(); } catch { return Response.json({ error: "Send JSON" }, { status: 400 }); }
@@ -20,6 +32,8 @@ export async function POST(req: Request): Promise<Response> {
 
   const env = process.env;
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return Response.json({ ok: true, reference, saved: false });
+  // Over the limit the buyer still goes on to WhatsApp; the order just isn't saved again.
+  if (tooMany((req.headers.get("x-forwarded-for") || "").split(",")[0].trim())) return Response.json({ ok: true, reference, saved: false });
   const customer = clean(b.customer_id, 40);
   const r = await fetch(`${(env.SUPABASE_URL || "").trim().replace(/\/+$/, "")}/rest/v1/orders`, {
     method: "POST",
