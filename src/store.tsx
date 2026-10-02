@@ -30,6 +30,11 @@ const pageFromHash = (): Page => {
 
 const Ctx = createContext<Store | null>(null);
 const KEY = "iup-bag-v2";
+export const ACCOUNT_KEY = "iup-account";
+export type Account = { id: string; email: string; name: string; role: "shopper" | "artisan"; session?: { access_token?: string; refresh_token?: string; expires_at?: number } };
+export function loadAccount(): Account | null {
+  try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY) || "null"); } catch { return null; }
+}
 
 function loadBag() {
   try {
@@ -49,7 +54,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
   const [page, setPage] = useState<Page>(pageFromHash);
-  const [user, setUser] = useState<string | null>(null);
+  const [user, setUserState] = useState<string | null>(() => loadAccount()?.name.split(" ")[0] ?? null);
+  const setUser = useCallback((name: string | null) => {
+    setUserState(name);
+    if (!name) try { localStorage.removeItem(ACCOUNT_KEY); } catch { /* storage unavailable */ }
+  }, []);
 
   useEffect(() => {
     const onHash = () => setPage(pageFromHash());
@@ -88,7 +97,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ bag, add, setQty, wish, toggleWish, bagOpen, setBagOpen, quick, setQuick, filter, setFilter, toast, say, page, go, user, setUser }),
-    [bag, add, setQty, wish, toggleWish, bagOpen, quick, filter, toast, say, page, go, user],
+    [bag, add, setQty, wish, toggleWish, bagOpen, quick, filter, toast, say, page, go, user, setUser],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

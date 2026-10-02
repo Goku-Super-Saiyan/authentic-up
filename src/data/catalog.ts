@@ -1,6 +1,6 @@
 import type { ArtKind } from "../art/crafts";
 
-// Sample listings for the prototype. Makers are collectives, prices are illustrative.
+// Catalogue listings. Makers are collectives; each price is confirmed with the maker before payment.
 export type Product = {
   id: number;
   name: string;

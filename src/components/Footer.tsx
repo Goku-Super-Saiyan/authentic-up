@@ -45,7 +45,7 @@ export default function Footer() {
           <button onClick={() => go("shipping")} className="hover:text-zari">Shipping</button>
           <button onClick={() => go("returns")} className="hover:text-zari">Returns and refunds</button>
         </nav>
-        <p>© {new Date().getFullYear()} {SITE.name}. Sample listings until the catalogue goes live.</p>
+        <p>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
       </div>
     </footer>
   );

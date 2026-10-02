@@ -57,7 +57,7 @@ export default function QuickView() {
                 )}
                 <button onClick={() => toggleWish(p.id)} aria-pressed={wish.has(p.id)} aria-label="Save to wishlist" className="grid h-12 w-12 place-items-center rounded-full border border-white/20 hover:border-zari"><Heart on={wish.has(p.id)} /></button>
               </div>
-              <p className="mt-4 font-mono text-[11px] text-ivory/45">{p.tags.join(" · ")} · sample listing</p>
+              <p className="mt-4 font-mono text-[11px] text-ivory/45">{p.tags.join(" · ")}</p>
             </div>
           </motion.div>
         </motion.div>
