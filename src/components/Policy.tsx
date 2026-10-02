@@ -4,7 +4,7 @@ import type { Page } from "../store";
 // Draft policy pages. Have them checked by a lawyer or CA before launch; names and contacts come from config.
 type Doc = { title: string; hindi: string; sections: [string, string[]][] };
 
-const grievance = `Grievance officer: ${SITE.name}, ${SITE.address}. Email ${SITE.email}. We acknowledge complaints within 48 hours and resolve them within 30 days, as the Consumer Protection (E-Commerce) Rules, 2020 require.`;
+const grievance = `Grievance officer: ${SITE.name}, ${SITE.address}. Email ${SITE.email}${SITE.phone ? `, phone ${SITE.phone}` : ""}. We acknowledge complaints within 48 hours and resolve them within 30 days, as the Consumer Protection (E-Commerce) Rules, 2020 require.`;
 
 export const POLICIES: Record<"privacy" | "terms" | "shipping" | "returns", Doc> = {
   privacy: {
