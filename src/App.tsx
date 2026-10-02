@@ -18,6 +18,7 @@ import QuickView from "./components/QuickView";
 import Toast from "./components/Toast";
 import ContactDock from "./components/ContactDock";
 import Policy, { isPolicy } from "./components/Policy";
+import { usePageTitle } from "./pageTitle";
 
 // The admin dashboard loads only when someone opens #admin, so shoppers never download it.
 const Admin = lazy(() => import("./admin/Admin"));
@@ -43,6 +44,7 @@ function useSmoothScroll() {
 
 function Pages() {
   const { page } = useStore();
+  usePageTitle(page);
   useEffect(() => {
     if (smooth.lenis) smooth.lenis.scrollTo(0, { immediate: true });
     else window.scrollTo(0, 0);
