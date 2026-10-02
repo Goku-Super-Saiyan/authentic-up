@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Emblem } from "./Logo";
 import { scrollToId, useStore } from "../store";
-import { SITE, telLink, waLink } from "../config";
+import { prettyPhone, SITE, telLink, waLink } from "../config";
 import { BRAND } from "../brand/brand";
 
 export default function Footer() {
@@ -33,8 +34,12 @@ export default function Footer() {
         </nav>
         <div className="grid gap-1">
           <a href={`mailto:${SITE.email}`} className="hover:text-zari">{SITE.email}</a>
-          {waLink("Namaste!") && <a href={waLink("Namaste!")!} target="_blank" rel="noopener" className="hover:text-zari">WhatsApp +{SITE.whatsapp}</a>}
-          {telLink() && <a href={telLink()!} className="hover:text-zari">Call {SITE.phone.startsWith("+") ? SITE.phone : "+" + SITE.phone}</a>}
+          {SITE.phone && (
+            <span>
+              {telLink() && <a href={telLink()!} className="hover:text-zari">{prettyPhone(SITE.phone)}</a>}
+              {waLink("Namaste!") && <> · <a href={waLink("Namaste!")!} target="_blank" rel="noopener" className="hover:text-zari">WhatsApp</a></>}
+            </span>
+          )}
           <span>{SITE.address}</span>
         </div>
       </div>
@@ -47,6 +52,35 @@ export default function Footer() {
         </nav>
         <p>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
       </div>
+      <VisitorCount />
     </footer>
+  );
+}
+
+// Small running count at the very end of the page. Each browser counts once a day (India time);
+// the line stays hidden until the count loads, so nothing shows if the counter isn't set up.
+const VISIT_KEY = "iup-visit-day";
+
+function VisitorCount() {
+  const [total, setTotal] = useState<number | null>(null);
+  useEffect(() => {
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    let counted = false;
+    try { counted = localStorage.getItem(VISIT_KEY) === today; } catch { /* private mode */ }
+    fetch("/api/visits", { method: counted ? "GET" : "POST" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { total: number | null } | null) => {
+        if (typeof d?.total !== "number" || d.total < 1) return;
+        setTotal(d.total);
+        if (!counted) try { localStorage.setItem(VISIT_KEY, today); } catch { /* private mode */ }
+      })
+      .catch(() => {});
+  }, []);
+  if (total === null) return null;
+  return (
+    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto mt-8 flex w-fit items-center gap-2 rounded-full border border-white/10 px-3.5 py-1.5 font-mono text-[11px] tracking-wide text-ivory/50">
+      <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-zari/70" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-zari" /></span>
+      <span className="tabular-nums text-ivory/75">{total.toLocaleString("en-IN")}</span> {total === 1 ? "visitor" : "visitors"}
+    </motion.p>
   );
 }

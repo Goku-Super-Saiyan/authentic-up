@@ -28,3 +28,23 @@ alter table enquiries add constraint enquiries_status_check check (status in ('n
 
 alter table products add column if not exists place text;           -- e.g. Madanpura, Varanasi
 alter table products add column if not exists featured boolean not null default false;
+
+
+-- Visitor counter for the footer (also in visitor-counter.sql).
+
+create table if not exists site_visits (
+  day date primary key,
+  visitors integer not null default 0
+);
+alter table site_visits enable row level security;   -- server only, nothing public
+
+create or replace function count_visit(add_one boolean default true) returns bigint
+language plpgsql security definer set search_path = public as $$
+begin
+  if add_one then
+    insert into site_visits (day, visitors) values ((now() at time zone 'Asia/Kolkata')::date, 1)
+    on conflict (day) do update set visitors = site_visits.visitors + 1;
+  end if;
+  return (select coalesce(sum(visitors), 0) from site_visits);
+end $$;
+revoke execute on function count_visit(boolean) from public, anon, authenticated;
