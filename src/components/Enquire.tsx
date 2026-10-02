@@ -29,13 +29,27 @@ const FAQ = [
 type Form = { name: string; email: string; phone: string; type: string; craft: string; district: string; qty: string; budget: string; message: string };
 const EMPTY: Form = { name: "", email: "", phone: "", type: TYPES[0], craft: CRAFTS[0], district: "Varanasi", qty: "", budget: BUDGETS[1], message: "" };
 
+// Other sections (Sell with us, the craft map) open this form part-filled, so what people type there is
+// actually sent to us with their contact details.
+const DRAFT_KEY = "iup-enquiry-draft";
+export function startEnquiry(draft: Partial<Form>) {
+  try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch { /* storage unavailable */ }
+}
+function takeDraft(): Partial<Form> {
+  try {
+    const d = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "{}");
+    sessionStorage.removeItem(DRAFT_KEY);
+    return d && typeof d === "object" ? d : {};
+  } catch { return {}; }
+}
+
 const field = "h-12 w-full rounded-xl border border-white/15 bg-white/5 px-4 text-[16px] text-ivory outline-none placeholder:text-ivory/35 focus:border-zari";
 
 export default function Enquire() {
   const { go } = useStore();
   const { t, lang } = useLang();
   const L = (s: string) => (lang === "hi" ? OPT_HI[s] ?? s : s);
-  const [f, setF] = useState<Form>(EMPTY);
+  const [f, setF] = useState<Form>(() => ({ ...EMPTY, ...takeDraft() }));
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
   const [sent, setSent] = useState<string | null>(null);
   const card = useRef<HTMLDivElement>(null);

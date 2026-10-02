@@ -2,6 +2,8 @@ import { animate, motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { DISTRICTS, districtHi } from "../data/districts";
 import { useLang } from "../i18n";
+import { startEnquiry } from "./Enquire";
+import { SITE } from "../config";
 import { useStore } from "../store";
 
 function CountUp({ to, prefix = "", suffix = "" }: { to: number; prefix?: string; suffix?: string }) {
@@ -28,16 +30,21 @@ const STEPS = [
 ];
 
 export default function Sell() {
-  const { say } = useStore();
+  const { say, go } = useStore();
   const { t, lang } = useLang();
   const [craft, setCraft] = useState("");
   const [district, setDistrict] = useState("Varanasi");
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    say(craft.trim()
-      ? t(`Thank you. ${district} makers of ${craft.trim()} are on the early list.`, `धन्यवाद। ${districtHi(district)} के ${craft.trim()} कारीगर शुरुआती सूची में जुड़ गए हैं।`)
-      : t("Tell us what you make first", "पहले बताइए कि आप क्या बनाते हैं"));
-    if (craft.trim()) setCraft("");
+    const what = craft.trim();
+    if (!what) { say(t("Tell us what you make first", "पहले बताइए कि आप क्या बनाते हैं")); return; }
+    // Continue on the enquiry form, where the maker adds their name and contact and it reaches us.
+    startEnquiry({
+      type: `Selling on ${SITE.name}`, craft: "Other ODOP craft", district,
+      message: t(`I make ${what} in ${district} district and would like to sell on ${SITE.name}.`, `हम ${districtHi(district)} ज़िले में ${what} बनाते हैं और ${SITE.name} पर बेचना चाहते हैं।`),
+    });
+    setCraft("");
+    go("enquire");
   };
 
   return (

@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { DISTRICTS, LANDMARKS, ODOP_CATS, RIVERS, type District, type OdopCat } from "../data/districts";
 import { scrollToId, useStore } from "../store";
 import { useLang } from "../i18n";
+import { startEnquiry } from "./Enquire";
 
 const RIVER_HI: Record<string, string> = { Ganga: "गंगा", Yamuna: "यमुना", Gomti: "गोमती", Ghaghara: "घाघरा" };
 
@@ -21,7 +22,7 @@ function smooth(points: [number, number][]) {
 }
 
 export default function CraftMap() {
-  const { setFilter, say, products } = useStore();
+  const { setFilter, go, products } = useStore();
   const { t, lang } = useLang();
   const hi = lang === "hi";
   const dn = (d: District) => (hi ? d.nameHi : d.name);
@@ -162,7 +163,13 @@ export default function CraftMap() {
                 <button
                   onClick={() => {
                     if (live) { setFilter(live.cat); scrollToId("bazaar"); }
-                    else say(t(`We'll let you know when ${sel.name}'s makers go live`, `${sel.nameHi} के कारीगर जुड़ते ही हम आपको बताएँगे`));
+                    else {
+                      startEnquiry({
+                        type: "Something else", district: sel.name,
+                        message: t(`Please let me know when pieces from ${sel.name} (${sel.product}) are available.`, `${sel.nameHi} (${sel.productHi}) की चीज़ें आने पर कृपया मुझे बताएँ।`),
+                      });
+                      go("enquire");
+                    }
                   }}
                   className="mt-7 h-12 w-full rounded-full bg-zari font-semibold text-night transition hover:brightness-110"
                 >
