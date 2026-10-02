@@ -5,6 +5,8 @@ import { TONE, type Tone } from "./types";
 // ---------- formatting ----------
 
 export const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
+// Orders for pieces without a price yet are saved with total 0 until you quote.
+export const orderTotal = (n: number) => (n > 0 ? inr(n) : "To quote");
 export const short = (n: number) => (n >= 1e7 ? (n / 1e7).toFixed(1) + " Cr" : n >= 1e5 ? (n / 1e5).toFixed(1) + " L" : n >= 1e3 ? (n / 1e3).toFixed(1) + "k" : String(Math.round(n)));
 export const date = (s: string) => new Date(s).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 export const dateTime = (s: string) => new Date(s).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });

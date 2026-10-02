@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { PRODUCTS } from "../data/catalog";
 import { useAdmin } from "./Admin";
 import { ENQUIRY_STATUS, ORDER_FLOW, ORDER_STATUS, TONE } from "./types";
-import { AreaChart, ago, Btn, Chip, Icon, inr, Panel, perDay, Ring, rolling, short, Stat } from "./ui";
+import { AreaChart, ago, Btn, Chip, Icon, orderTotal, Panel, perDay, Ring, rolling, short, Stat } from "./ui";
 
 const PAID = new Set(["paid", "packed", "shipped", "delivered"]);
 
@@ -57,7 +57,7 @@ export default function Overview() {
 
   const feed = useMemo(() => [
     ...enquiries.map((e) => ({ t: e.created_at, icon: "inbox", tone: TONE.sindoor, text: <><b>{e.name}</b> sent an enquiry · {e.kind}</>, go: () => open("enquiries", e.id) })),
-    ...orders.map((o) => ({ t: o.created_at, icon: "orders", tone: TONE.zari, text: <><b>{o.reference}</b> placed · {inr(o.total_inr)}</>, go: () => open("orders", o.id) })),
+    ...orders.map((o) => ({ t: o.created_at, icon: "orders", tone: TONE.zari, text: <><b>{o.reference}</b> placed · {orderTotal(o.total_inr)}</>, go: () => open("orders", o.id) })),
     ...customers.map((c) => ({ t: c.created_at, icon: "customers", tone: TONE.ganga, text: <><b>{c.name || c.email || c.phone}</b> signed up{c.role === "artisan" ? " as a maker" : ""}</>, go: () => open("customers", c.id) })),
     ...products.map((p) => ({ t: p.created_at, icon: "products", tone: TONE.jade, text: <><b>{p.name}</b> added to the catalogue</>, go: () => open("products", p.id) })),
   ].sort((a, b) => +new Date(b.t) - +new Date(a.t)).slice(0, 8), [enquiries, orders, customers, products, open]);

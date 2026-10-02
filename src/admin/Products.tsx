@@ -77,7 +77,7 @@ export default function Products() {
                     {p.featured && <span className="rounded-full bg-night/85 backdrop-blur"><Chip tone="zari" dot={false}>★ Featured</Chip></span>}
                   </div>
                   {!p.photos?.length && <span className="absolute right-3 top-3 rounded-full bg-night/70 px-2 py-0.5 font-mono text-[10px] text-marigold">no photo</span>}
-                  <p className="absolute bottom-3 left-4 font-display text-2xl text-ivory drop-shadow">{inr(p.price_inr)}</p>
+                  <p className="absolute bottom-3 left-4 font-display text-2xl text-ivory drop-shadow">{p.price_inr > 0 ? inr(p.price_inr) : "Price on request"}</p>
                 </div>
                 <div className="p-4">
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-marigold">{p.place || p.district}</p>
@@ -127,12 +127,11 @@ function Editor({ draft, onClose, onDelete }: { draft: Draft | null; onClose: ()
 
   const submit = async () => {
     if (!d.name.trim()) return notify("Give the product a name", true);
-    if (!(Number(d.price_inr) > 0)) return notify("Add a price", true);
     setBusy(true);
     const row = {
       id: d.id, name: d.name.trim(), slug: d.slug || `${slugify(d.name)}-${Math.random().toString(36).slice(2, 6)}`,
       maker_id: d.maker_id || null, district: d.district, place: d.place?.trim() || null, category: d.category,
-      price_inr: Math.round(Number(d.price_inr)), stock: Math.max(0, Math.round(Number(d.stock) || 0)),
+      price_inr: Math.max(0, Math.round(Number(d.price_inr) || 0)), stock: Math.max(0, Math.round(Number(d.stock) || 0)),
       spec: d.spec?.trim() || null, story: d.story?.trim() || null, details: d.detailsText.split("\n").map((s) => s.trim()).filter(Boolean),
       tags: d.tags, photos: d.photos, active: d.active, featured: !!d.featured,
     };
@@ -188,7 +187,7 @@ function Editor({ draft, onClose, onDelete }: { draft: Draft | null; onClose: ()
                 {data.makers.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
             </Field>
-            <Field label="Price (₹)"><input value={d.price_inr || ""} onChange={(e) => set("price_inr", Number(e.target.value.replace(/\D/g, "")))} inputMode="numeric" className={inputCls} placeholder="18500" /></Field>
+            <Field label="Price (₹), blank shows “Price on request”"><input value={d.price_inr || ""} onChange={(e) => set("price_inr", Number(e.target.value.replace(/\D/g, "")))} inputMode="numeric" className={inputCls} placeholder="18500" /></Field>
             <Field label="In stock"><input value={d.stock} onChange={(e) => set("stock", Number(e.target.value.replace(/\D/g, "")))} inputMode="numeric" className={inputCls} /></Field>
             <Field label="District"><select value={d.district} onChange={(e) => set("district", e.target.value)} className={inputCls}>{DISTRICTS.map((x) => <option key={x.name}>{x.name}</option>)}</select></Field>
             <Field label="Town or mohalla"><input value={d.place ?? ""} onChange={(e) => set("place", e.target.value)} className={inputCls} placeholder="e.g. Madanpura, Varanasi" /></Field>
@@ -218,7 +217,7 @@ function Editor({ draft, onClose, onDelete }: { draft: Draft | null; onClose: ()
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-marigold">{preview.place}</p>
               <p className="mt-1 line-clamp-2 text-sm font-semibold leading-snug">{preview.name}</p>
               <p className="mt-0.5 line-clamp-1 text-[11px] text-ivory/55">{preview.spec}</p>
-              <p className="mt-2 font-display text-lg text-zari">{inr(preview.price)}</p>
+              <p className="mt-2 font-display text-lg text-zari">{preview.price ? inr(preview.price) : "Price on request"}</p>
             </div>
           </div>
         </div>

@@ -12,7 +12,9 @@ export default function BagDrawer() {
   const { products, bag, setQty, bagOpen, setBagOpen, say, go } = useStore();
   const { t, lang } = useLang();
   const rows = [...bag].map(([id, q]) => ({ p: products.find((x) => x.id === id)!, q })).filter((r) => r.p);
-  const total = rows.reduce((a, r) => a + r.p.price * r.q, 0);
+  const total = rows.reduce((a, r) => a + (r.p.price ?? 0) * r.q, 0);
+  // Pieces without a confirmed price make the bag a quote request: no total or shipping bar until we quote.
+  const quote = rows.some((r) => !r.p.price);
   const left = Math.max(0, FREE_SHIP - total);
 
   // Orders are confirmed by hand for now: send the bag on WhatsApp, or as an enquiry if WhatsApp isn't set up.
@@ -24,15 +26,16 @@ export default function BagDrawer() {
     fetch("/api/orders", {
       method: "POST", keepalive: true, headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        reference, items: rows.map((r) => ({ id: r.p.id, name: r.p.name, place: r.p.place, qty: r.q, price: r.p.price })),
+        reference, items: rows.map((r) => ({ id: r.p.id, name: r.p.name, place: r.p.place, qty: r.q, price: r.p.price ?? 0 })),
         name: acc?.name, email: acc?.email, phone: acc?.phone, customer_id: acc?.id,
       }),
     }).catch(() => {});
-    const lines = rows.map((r) => { const x = productText(r.p, lang); return `• ${x.name} (${x.place}) × ${r.q}: ${inr(r.p.price * r.q)}`; });
-    const link = waLink(t(
-      `Namaste! I'd like to place order ${reference}:\n${lines.join("\n")}\nTotal: ${inr(total)}\n\nPlease confirm availability and shipping.`,
-      `नमस्ते! मुझे ऑर्डर ${reference} देना है:\n${lines.join("\n")}\nकुल: ${inr(total)}\n\nकृपया उपलब्धता और शिपिंग की पुष्टि करें।`,
-    ));
+    const lines = rows.map((r) => { const x = productText(r.p, lang); return `• ${x.name} (${x.place}) × ${r.q}${r.p.price ? `: ${inr(r.p.price * r.q)}` : ""}`; });
+    const link = waLink(quote
+      ? t(`Namaste! Please send me a quote for ${reference}:\n${lines.join("\n")}\n\nPlease share the price, availability and shipping.`,
+          `नमस्ते! कृपया ${reference} के लिए कोटेशन भेजें:\n${lines.join("\n")}\n\nकृपया दाम, उपलब्धता और शिपिंग बताएँ।`)
+      : t(`Namaste! I'd like to place order ${reference}:\n${lines.join("\n")}\nTotal: ${inr(total)}\n\nPlease confirm availability and shipping.`,
+          `नमस्ते! मुझे ऑर्डर ${reference} देना है:\n${lines.join("\n")}\nकुल: ${inr(total)}\n\nकृपया उपलब्धता और शिपिंग की पुष्टि करें।`));
     setBagOpen(false);
     if (link) window.open(link, "_blank", "noopener");
     else go("enquire");
@@ -66,14 +69,14 @@ export default function BagDrawer() {
                 <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M1 1l12 12M13 1 1 13" stroke="currentColor" strokeWidth="1.6" /></svg>
               </button>
             </header>
-            <div className="border-b border-white/10 px-6 py-4">
+            {!quote && rows.length > 0 && <div className="border-b border-white/10 px-6 py-4">
               <p className="text-sm text-ivory/80">{left > 0
                 ? lang === "hi" ? <>पूरे भारत में मुफ़्त शिपिंग के लिए <b className="text-zari">{inr(left)}</b> का सामान और डालें</> : <>Add <b className="text-zari">{inr(left)}</b> more for free shipping across India</>
                 : t("You've unlocked free shipping across India", "आपको पूरे भारत में मुफ़्त शिपिंग मिलेगी")}</p>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
                 <motion.div className="h-full rounded-full bg-gradient-to-r from-saffron to-zari" animate={{ width: `${Math.min(100, (total / FREE_SHIP) * 100)}%` }} />
               </div>
-            </div>
+            </div>}
             <div className="flex-1 overflow-y-auto px-6" data-lenis-prevent>
               {rows.length === 0 && <p className="py-10 text-ivory/60">{t("Your bag is empty. The Banarasi sarees are a good place to start.", "आपका बैग ख़ाली है। शुरुआत बनारसी साड़ियों से कीजिए।")}</p>}
               <AnimatePresence initial={false}>
@@ -89,14 +92,16 @@ export default function BagDrawer() {
                         <button onClick={() => setQty(p.id, q + 1)} className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/10" aria-label={t(`One more ${p.name}`, `${x.name} एक और`)}>+</button>
                       </div>
                     </div>
-                    <span className="font-mono text-sm tabular-nums">{inr(p.price * q)}</span>
+                    <span className="font-mono text-sm tabular-nums">{p.price ? inr(p.price * q) : <span className="font-body text-xs text-zari">{t("On request", "पूछें")}</span>}</span>
                   </motion.div>
                 ); })}
               </AnimatePresence>
             </div>
             <footer className="border-t border-white/10 px-6 py-5">
-              <div className="flex justify-between text-lg font-semibold tabular-nums"><span>{t("Total", "कुल")}</span><span>{inr(total)}</span></div>
-              <button onClick={checkout} className="mt-4 h-12 w-full rounded-full bg-zari font-semibold text-night">{t("Place order", "ऑर्डर करें")}</button>
+              {quote
+                ? <p className="text-sm text-ivory/70">{t("We'll send you the maker's price for each piece, with shipping, before you pay anything.", "भुगतान से पहले हम आपको हर चीज़ का कारीगर का दाम और शिपिंग बताएँगे।")}</p>
+                : <div className="flex justify-between text-lg font-semibold tabular-nums"><span>{t("Total", "कुल")}</span><span>{inr(total)}</span></div>}
+              <button onClick={checkout} className="mt-4 h-12 w-full rounded-full bg-zari font-semibold text-night">{quote ? t("Ask for a quote", "कोटेशन माँगें") : t("Place order", "ऑर्डर करें")}</button>
               <p className="mt-3 text-center text-xs text-ivory/50">{t("We confirm availability, shipping and payment with you directly before anything is charged.", "कोई भी पैसा लेने से पहले हम उपलब्धता, शिपिंग और भुगतान आपसे सीधे तय करते हैं।")}</p>
             </footer>
           </motion.aside>

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { useAdmin } from "./Admin";
 import { downloadCsv } from "./api";
-import { ago, Btn, Chip, date, Drawer, Empty, Filters, Icon, inr, Panel, perDay, rolling, Search, Sparkline, waNumber } from "./ui";
+import { ago, Btn, Chip, date, Drawer, Empty, Filters, Icon, orderTotal, Panel, perDay, rolling, Search, Sparkline, waNumber } from "./ui";
 import { ORDER_STATUS, TONE, type Customer } from "./types";
 
 type F = "all" | "shopper" | "artisan";
@@ -88,7 +88,7 @@ export default function Customers() {
               {ordersOf(cur).length ? (
                 <ul className="grid gap-1.5">{ordersOf(cur).map((o) => (
                   <li key={o.id}><button onClick={() => open("orders", o.id)} className="flex w-full items-center gap-3 rounded-xl border border-white/[0.07] px-4 py-2.5 text-left text-sm hover:border-zari/40">
-                    <span className="font-mono text-zari">{o.reference}</span><Chip tone={ORDER_STATUS[o.status].tone}>{ORDER_STATUS[o.status].label}</Chip><span className="ml-auto tabular-nums">{inr(o.total_inr)}</span>
+                    <span className="font-mono text-zari">{o.reference}</span><Chip tone={ORDER_STATUS[o.status].tone}>{ORDER_STATUS[o.status].label}</Chip><span className="ml-auto tabular-nums">{orderTotal(o.total_inr)}</span>
                   </button></li>
                 ))}</ul>
               ) : <p className="text-sm text-ivory/50">No orders yet.</p>}
