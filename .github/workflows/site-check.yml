@@ -44,3 +44,12 @@ jobs:
               echo "$h" | grep -qi "^$k:" || echo "::warning::$p is missing $k"
             done
           done
+      - name: Google Safe Browsing
+        if: always()
+        # The status Google's "Dangerous site" warning is based on. The second number is 1 when nothing unsafe was found.
+        run: |
+          for h in authenticup.in www.authenticup.in; do
+            echo "== $h"
+            curl -sS "https://transparencyreport.google.com/transparencyreport/api/v3/safebrowsing/status?site=$h" | tail -n +2
+            echo
+          done
