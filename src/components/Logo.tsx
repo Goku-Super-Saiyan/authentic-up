@@ -16,7 +16,7 @@ export function Wordmark({ compact = false }: { compact?: boolean }) {
         <span className="font-display text-[22px] leading-none tracking-tight">
           {BRAND.word} <span className="zari-text">UP</span>
         </span>
-        <span className="mt-1 hidden text-[11px] tracking-wide text-mist sm:block">{BRAND.hindi}</span>
+        <span className="mt-1 hidden text-[11px] text-mist sm:block">{BRAND.hindi}</span>
       </span>
     </span>
   );
