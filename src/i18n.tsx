@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 // English and Hindi for the storefront. Text is written as pairs next to where it is used:
 //   const { t } = useLang();  t("Add to bag", "बैग में डालें")
-// The choice is remembered on the device. ?lang=hi or ?lang=en in a link picks it too.
+// The choice is remembered on the device. ?lang=hi or ?lang=en in a link picks it too, and /hi/ opens in Hindi.
 // The admin dashboard stays in English.
 export type Lang = "en" | "hi";
 const KEY = "iup-lang";
@@ -14,6 +14,7 @@ function initial(): Lang {
   try {
     const q = new URLSearchParams(location.search).get("lang");
     if (q === "hi" || q === "en") return q;
+    if (location.pathname.startsWith("/hi")) return "hi"; // the Hindi home page, /hi/
     const saved = localStorage.getItem(KEY);
     if (saved === "hi" || saved === "en") return saved;
   } catch { /* storage unavailable */ }
