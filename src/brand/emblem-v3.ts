@@ -11,6 +11,7 @@
 import type { EmblemVariant } from "./emblem";
 import { CUSPED, OUTER } from "./emblem-v1-1";
 import { BRAND } from "./brand";
+import { HINDI_PATHS } from "./hindi-paths";
 
 // Ghat skyline, left to right, in viewBox units. Each entry: [kind, x, width, height].
 type Part = ["box" | "shikhara" | "dome" | "chhatri", number, number, number];
@@ -43,6 +44,14 @@ function skyline(fill: string, lit: string, flag: string) {
   // chhatri umbrellas on the steps
   const umbrellas = [44, 88, 152, 190].map((x) => `<path d="M${x - 7} 210q7-8 14 0z"/><path d="M${x} 210v6" stroke="${fill}" stroke-width="1.2"/>`).join("");
   return `<g fill="${fill}">${shapes}${umbrellas}</g><g fill="${lit}" opacity=".85">${windows}</g><g fill="none" stroke="${flag}" stroke-width="1.4" stroke-linejoin="round">${flags}</g>`;
+}
+
+// Devanagari as SVG <text> breaks apart in some browsers (matras split off with dotted circles),
+// so the line is drawn from pre-shaped outlines (src/brand/hindi-paths.ts).
+function hindiLine(text: string, paint: string) {
+  const p = HINDI_PATHS[text];
+  if (p) return `<path transform="translate(${(120 - p.width / 2).toFixed(2)} 250)" d="${p.d}" ${paint}/>`;
+  return `<text x="120" y="250" text-anchor="middle" font-family="Mukta, 'Noto Sans Devanagari', sans-serif" font-weight="700" font-size="17" ${paint}>${text}</text>`;
 }
 
 export function emblemSvgV3(id: string, variant: EmblemVariant = "full", animated = false, brand = BRAND): string {
@@ -151,9 +160,8 @@ export function emblemSvgV3(id: string, variant: EmblemVariant = "full", animate
     <circle cx="197" cy="72" r="3" fill="${full ? "#FFF4E2" : paper}"/>
   </g>
 
-  <!-- अतुल्य उत्तर प्रदेश, below UP -->
-  <text x="120" y="250" text-anchor="middle" font-family="Mukta, 'Noto Sans Devanagari', sans-serif" font-weight="700" font-size="17" letter-spacing=".5"
-    fill="${full ? "#FFE7A6" : ink}" stroke="${full ? "#1A0B30" : paper}" stroke-width="${full ? 3.2 : 0}" paint-order="stroke" stroke-linejoin="round">${brand.hindi}</text>
+  <!-- the brand's Hindi line below UP, as outlines so it never depends on the viewer's fonts -->
+  ${hindiLine(brand.hindi, `fill="${full ? "#FFE7A6" : ink}" stroke="${full ? "#1A0B30" : paper}" stroke-width="${full ? 3.2 : 0}" paint-order="stroke" stroke-linejoin="round"`)}
 
   <g fill="${gold}" opacity="${full ? 0.9 : 1}">
     <rect x="28" y="262" width="184" height="3"/><rect x="20" y="272" width="200" height="3"/>
