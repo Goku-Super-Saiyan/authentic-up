@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { DISTRICTS } from "../data/districts";
 import { useStore } from "../store";
-import { SITE, waLink } from "../config";
+import { SITE, waLink, prettyPhone } from "../config";
 
 const TYPES = ["Bulk or wholesale", "Export", "Custom design", "Corporate gifting", "Wedding trousseau", `Selling on ${SITE.name}`, "Something else"];
 const BUDGETS = ["Under ₹25,000", "₹25,000 – 1 lakh", "₹1 – 5 lakh", "Above ₹5 lakh"];
@@ -164,7 +164,7 @@ export default function Enquire() {
                 <div><dt className="text-xs text-ivory/50">Email</dt><dd className="select-all font-mono">{SITE.email}</dd></div>
                 <div><dt className="text-xs text-ivory/50">Hours</dt><dd>Mon to Sat, 10 am to 7 pm IST</dd></div>
                 <div><dt className="text-xs text-ivory/50">Languages</dt><dd>Hindi, English, Urdu</dd></div>
-                {SITE.whatsapp && <div><dt className="text-xs text-ivory/50">WhatsApp</dt><dd><a className="text-zari hover:underline" href={`https://wa.me/${SITE.whatsapp}`} target="_blank" rel="noopener">+{SITE.whatsapp}</a></dd></div>}
+                {SITE.whatsapp && <div><dt className="text-xs text-ivory/50">WhatsApp</dt><dd><a className="text-zari hover:underline" href={`https://wa.me/${SITE.whatsapp}`} target="_blank" rel="noopener">{prettyPhone(SITE.whatsapp)}</a></dd></div>}
               </dl>
             </div>
             <div className="rounded-[28px] border border-white/10 p-3">

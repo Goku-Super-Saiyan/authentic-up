@@ -16,3 +16,9 @@ export const SITE = {
 
 export const waLink = (text: string) => SITE.whatsapp ? `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(text)}` : null;
 export const telLink = () => (SITE.phone ? `tel:${SITE.phone.startsWith("+") ? SITE.phone : "+" + SITE.phone}` : null);
+
+// "+919953777899" -> "+91 99537 77899", for showing the number to people.
+export const prettyPhone = (n: string) => {
+  const d = n.replace(/\D/g, "");
+  return d.length === 12 && d.startsWith("91") ? `+91 ${d.slice(2, 7)} ${d.slice(7)}` : n.startsWith("+") ? n : "+" + n;
+};
