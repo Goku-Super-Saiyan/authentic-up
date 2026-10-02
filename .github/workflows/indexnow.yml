@@ -1,0 +1,18 @@
+name: Tell search engines about new pages
+# After each push to main, sends the sitemap's pages to IndexNow (Bing, Yandex, Seznam, Naver).
+# Only the authentic-up repo runs it, since authenticup.in is the indexed site.
+on:
+  push:
+    branches: [main]
+jobs:
+  indexnow:
+    if: github.repository == 'Goku-Super-Saiyan/authentic-up'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Vercel to finish deploying
+        run: sleep 120
+      - name: Submit sitemap pages
+        run: |
+          urls=$(curl -fsSL https://www.authenticup.in/sitemap.xml | grep -o '<loc>[^<]*' | sed 's/<loc>//' | jq -R . | jq -s -c .)
+          curl -fsS -X POST https://api.indexnow.org/indexnow -H 'Content-Type: application/json; charset=utf-8' \
+            -d "{\"host\":\"www.authenticup.in\",\"key\":\"c94d68e126aa61e650340014907e1743\",\"keyLocation\":\"https://www.authenticup.in/c94d68e126aa61e650340014907e1743.txt\",\"urlList\":$urls}" -w '%{http_code}\n'
