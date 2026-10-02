@@ -229,6 +229,7 @@ export default function Login() {
                 </motion.div>
                 <p className="text-lg">Signed in as <b>{account?.name}</b>{account?.role === "artisan" ? ", maker account" : ""}.</p>
                 <p className="-mt-2 text-sm text-ivory/55 [overflow-wrap:anywhere]">{account?.email || account?.phone}</p>
+                {account?.admin && <button onClick={() => go("admin")} className="mt-3 h-12 rounded-full border border-zari/60 bg-zari/10 font-semibold text-zari hover:bg-zari/20">Open admin dashboard</button>}
                 <button onClick={() => go("home")} className="mt-3 h-12 rounded-full bg-zari font-semibold text-night">{account?.role === "artisan" ? "Go to the bazaar" : "Continue shopping"}</button>
                 <button onClick={logOut} className="h-12 rounded-full border border-white/15 font-semibold hover:border-zari">Log out</button>
               </motion.div>

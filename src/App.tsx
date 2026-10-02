@@ -1,6 +1,6 @@
 import { MotionConfig, motion, useScroll, useSpring } from "framer-motion";
 import Lenis from "lenis";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { smooth, StoreProvider, useStore } from "./store";
 import Login from "./components/Login";
 import Enquire from "./components/Enquire";
@@ -18,6 +18,9 @@ import QuickView from "./components/QuickView";
 import Toast from "./components/Toast";
 import ContactDock from "./components/ContactDock";
 import Policy, { isPolicy } from "./components/Policy";
+
+// The admin dashboard loads only when someone opens #admin, so shoppers never download it.
+const Admin = lazy(() => import("./admin/Admin"));
 
 function ScrollThread() {
   const { scrollYProgress } = useScroll();
@@ -60,11 +63,10 @@ function Pages() {
   );
 }
 
-export default function App() {
-  useSmoothScroll();
+function Shell() {
+  const { page } = useStore();
+  if (page === "admin") return <Suspense fallback={<div className="min-h-[100svh] bg-[#0B0519]" />}><Admin /></Suspense>;
   return (
-    <MotionConfig reducedMotion="user">
-      <StoreProvider>
         <div className="grain">
           <ScrollThread />
           <Nav />
@@ -75,6 +77,15 @@ export default function App() {
           <Toast />
           <ContactDock />
         </div>
+  );
+}
+
+export default function App() {
+  useSmoothScroll();
+  return (
+    <MotionConfig reducedMotion="user">
+      <StoreProvider>
+        <Shell />
       </StoreProvider>
     </MotionConfig>
   );

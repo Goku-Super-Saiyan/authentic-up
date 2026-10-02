@@ -1,6 +1,5 @@
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import { useMemo, useRef, useState } from "react";
-import { PRODUCTS } from "../data/catalog";
 import { DISTRICTS, LANDMARKS, ODOP_CATS, RIVERS, type District, type OdopCat } from "../data/districts";
 import { scrollToId, useStore } from "../store";
 
@@ -19,7 +18,7 @@ function smooth(points: [number, number][]) {
 }
 
 export default function CraftMap() {
-  const { setFilter, say } = useStore();
+  const { setFilter, say, products } = useStore();
   const [sel, setSel] = useState<District>(DISTRICTS.find((d) => d.name === "Varanasi")!);
   const [hover, setHover] = useState<District | null>(null);
   const [cat, setCat] = useState<OdopCat | null>(null);
@@ -29,7 +28,7 @@ export default function CraftMap() {
   const rivers = useMemo(() => RIVERS.map((r) => ({ ...r, d: smooth(r.points) })), []);
   const order = useMemo(() => [...DISTRICTS].sort((a, b) => a.lon - b.lon), []);
   const matches = q.trim() ? DISTRICTS.filter((d) => (d.name + " " + d.product).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 6) : [];
-  const live = PRODUCTS.find((p) => p.district === sel.name);
+  const live = products.find((p) => p.district === sel.name);
   const tip = hover ?? null;
 
   return (

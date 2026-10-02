@@ -1,16 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { PRODUCTS } from "./data/catalog";
+import { fromRow, PRODUCTS, type PID, type Product, type ProductRow } from "./data/catalog";
 
 type Store = {
-  bag: Map<number, number>;
-  add: (id: number) => void;
-  setQty: (id: number, qty: number) => void;
-  wish: Set<number>;
-  toggleWish: (id: number) => void;
+  products: Product[];
+  bag: Map<PID, number>;
+  add: (id: PID) => void;
+  setQty: (id: PID, qty: number) => void;
+  wish: Set<PID>;
+  toggleWish: (id: PID) => void;
   bagOpen: boolean;
   setBagOpen: (v: boolean) => void;
-  quick: number | null;
-  setQuick: (id: number | null) => void;
+  quick: PID | null;
+  setQuick: (id: PID | null) => void;
   filter: string;
   setFilter: (f: string) => void;
   toast: string | null;
@@ -21,8 +22,8 @@ type Store = {
   setUser: (name: string | null) => void;
 };
 
-export type Page = "home" | "login" | "enquire" | "privacy" | "terms" | "shipping" | "returns";
-const PAGES: Page[] = ["login", "enquire", "privacy", "terms", "shipping", "returns"];
+export type Page = "home" | "login" | "enquire" | "admin" | "privacy" | "terms" | "shipping" | "returns";
+const PAGES: Page[] = ["login", "enquire", "admin", "privacy", "terms", "shipping", "returns"];
 const pageFromHash = (): Page => {
   const h = window.location.hash.replace("#", "") as Page;
   return PAGES.includes(h) ? h : "home";
@@ -38,18 +39,19 @@ export function loadAccount(): Account | null {
 
 function loadBag() {
   try {
-    const rows = JSON.parse(localStorage.getItem(KEY) || "[]") as [number, number][];
-    return new Map(rows.filter(([id]) => PRODUCTS.some((p) => p.id === id)));
+    const rows = JSON.parse(localStorage.getItem(KEY) || "[]") as [PID, number][];
+    return new Map(rows.filter(([id, q]) => (typeof id === "number" || typeof id === "string") && q > 0));
   } catch {
-    return new Map<number, number>();
+    return new Map<PID, number>();
   }
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [bag, setBag] = useState<Map<number, number>>(loadBag);
-  const [wish, setWish] = useState<Set<number>>(new Set());
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [bag, setBag] = useState<Map<PID, number>>(loadBag);
+  const [wish, setWish] = useState<Set<PID>>(new Set());
   const [bagOpen, setBagOpen] = useState(false);
-  const [quick, setQuick] = useState<number | null>(null);
+  const [quick, setQuick] = useState<PID | null>(null);
   const [filter, setFilter] = useState("All");
   const [toast, setToast] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -71,6 +73,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try { history.replaceState(null, "", p === "home" ? location.pathname + location.search : `#${p}`); } catch { /* sandboxed */ }
   }, []);
 
+  // Products added on the admin page replace the built-in pieces as soon as the first one is live.
+  useEffect(() => {
+    fetch("/api/products").then((r) => (r.ok ? r.json() : [])).then((rows: ProductRow[]) => {
+      if (!Array.isArray(rows) || !rows.length) return;
+      const live = rows.map(fromRow).sort((a, b) => Number(!!b.featured) - Number(!!a.featured));
+      setProducts(live);
+      setBag((b) => new Map([...b].filter(([id]) => live.some((p) => p.id === id))));
+    }).catch(() => { /* keep the built-in pieces */ });
+  }, []);
+
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify([...bag])); } catch { /* storage unavailable */ }
   }, [bag]);
@@ -81,23 +93,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     timer.current = window.setTimeout(() => setToast(null), 2600);
   }, []);
 
-  const add = useCallback((id: number) => {
+  const add = useCallback((id: PID) => {
     setBag((b) => new Map(b).set(id, (b.get(id) ?? 0) + 1));
-    const p = PRODUCTS.find((x) => x.id === id);
+    const p = products.find((x) => x.id === id);
     if (p) say(`Added ${p.name} to your bag`);
-  }, [say]);
+  }, [say, products]);
 
-  const setQty = useCallback((id: number, qty: number) => {
+  const setQty = useCallback((id: PID, qty: number) => {
     setBag((b) => { const n = new Map(b); qty > 0 ? n.set(id, qty) : n.delete(id); return n; });
   }, []);
 
-  const toggleWish = useCallback((id: number) => {
+  const toggleWish = useCallback((id: PID) => {
     setWish((w) => { const n = new Set(w); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }, []);
 
   const value = useMemo(
-    () => ({ bag, add, setQty, wish, toggleWish, bagOpen, setBagOpen, quick, setQuick, filter, setFilter, toast, say, page, go, user, setUser }),
-    [bag, add, setQty, wish, toggleWish, bagOpen, quick, filter, toast, say, page, go, user, setUser],
+    () => ({ products, bag, add, setQty, wish, toggleWish, bagOpen, setBagOpen, quick, setQuick, filter, setFilter, toast, say, page, go, user, setUser }),
+    [products, bag, add, setQty, wish, toggleWish, bagOpen, quick, filter, toast, say, page, go, user, setUser],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

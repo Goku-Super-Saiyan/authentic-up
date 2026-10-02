@@ -1,14 +1,16 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
-import { PRODUCTS } from "../data/catalog";
+import { useEffect, useState } from "react";
 import { inr, useStore } from "../store";
 import { Heart } from "./Bazaar";
 import ProductArt from "./ProductArt";
 import { waLink } from "../config";
 
 export default function QuickView() {
-  const { quick, setQuick, add, wish, toggleWish } = useStore();
-  const p = PRODUCTS.find((x) => x.id === quick);
+  const { quick, setQuick, add, wish, toggleWish, products } = useStore();
+  const p = products.find((x) => x.id === quick);
+  const [shot, setShot] = useState(0);
+  useEffect(() => setShot(0), [quick]);
+  const photos = p?.photos ?? [];
 
   useEffect(() => {
     if (!p) return;
@@ -31,8 +33,17 @@ export default function QuickView() {
             exit={{ y: 40 }}
             className="relative grid w-full max-w-[980px] overflow-hidden rounded-[28px] border border-white/10 bg-dusk md:grid-cols-2"
           >
-            <motion.div layoutId={`art-${p.id}`} className="aspect-[4/5] w-full md:aspect-auto md:min-h-[560px]">
-              <ProductArt p={p} label={p.name} />
+            <motion.div layoutId={`art-${p.id}`} className="relative aspect-[4/5] w-full md:aspect-auto md:min-h-[560px]">
+              <ProductArt p={photos[shot] ? { ...p, photo: photos[shot] } : p} label={p.name} />
+            {photos.length > 1 && (
+              <div className="absolute bottom-3 left-3 flex gap-2 md:bottom-4 md:left-4" role="group" aria-label="Photos">
+                {photos.slice(0, 6).map((src, i) => (
+                  <button key={src} onClick={() => setShot(i)} aria-label={`Photo ${i + 1}`} aria-pressed={shot === i} className={`h-12 w-12 overflow-hidden rounded-lg border-2 ${shot === i ? "border-zari" : "border-white/30"}`}>
+                    <img src={src} alt="" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
             </motion.div>
             <div className="flex min-w-0 flex-col p-6 sm:p-9">
               <div className="flex items-start justify-between gap-4">
