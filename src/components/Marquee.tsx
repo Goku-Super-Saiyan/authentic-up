@@ -1,3 +1,5 @@
+import { useLang } from "../i18n";
+
 const EN = ["Banarasi", "Chikankari", "Zardozi", "Kaanch", "Attar", "Nakkashi", "Parchinkari", "Terracotta", "Dari", "Jali"];
 const HI = ["बनारसी", "चिकनकारी", "ज़रदोज़ी", "काँच", "इत्र", "नक्काशी", "पच्चीकारी", "टेराकोटा", "दरी", "जाली"];
 
@@ -18,8 +20,9 @@ function Row({ words, reverse, outline }: { words: string[]; reverse?: boolean; 
 }
 
 export default function Marquee() {
+  const { t } = useLang();
   return (
-    <section className="relative overflow-hidden border-y border-white/10 bg-silk py-6" aria-label="Crafts of Uttar Pradesh">
+    <section className="relative overflow-hidden border-y border-white/10 bg-silk py-6" aria-label={t("Crafts of Uttar Pradesh", "उत्तर प्रदेश के शिल्प")}>
       <Row words={EN} />
       <Row words={HI} reverse outline />
     </section>

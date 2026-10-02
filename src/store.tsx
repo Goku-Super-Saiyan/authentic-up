@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { fromRow, PRODUCTS, type PID, type Product, type ProductRow } from "./data/catalog";
+import { useLang } from "./i18n";
 
 type Store = {
   products: Product[];
@@ -47,6 +48,7 @@ function loadBag() {
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const { lang } = useLang();
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [bag, setBag] = useState<Map<PID, number>>(loadBag);
   const [wish, setWish] = useState<Set<PID>>(new Set());
@@ -96,8 +98,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const add = useCallback((id: PID) => {
     setBag((b) => new Map(b).set(id, (b.get(id) ?? 0) + 1));
     const p = products.find((x) => x.id === id);
-    if (p) say(`Added ${p.name} to your bag`);
-  }, [say, products]);
+    if (p) say(lang === "hi" ? `${p.hi?.name ?? p.name} बैग में डाल दिया` : `Added ${p.name} to your bag`);
+  }, [say, products, lang]);
 
   const setQty = useCallback((id: PID, qty: number) => {
     setBag((b) => { const n = new Map(b); qty > 0 ? n.set(id, qty) : n.delete(id); return n; });

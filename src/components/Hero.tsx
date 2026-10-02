@@ -4,6 +4,7 @@ import { rng } from "../art/crafts";
 import { scrollToId } from "../store";
 import Magnetic from "./Magnetic";
 import { BRAND } from "../brand/brand";
+import { useLang } from "../i18n";
 
 // Dusk over the Varanasi ghats, drawn as layered SVG silhouettes.
 const W = 1600, SUN_X = 1120;
@@ -56,6 +57,7 @@ function skyline(seed: number, base: number, minH: number, maxH: number, lit: bo
 const TITLE = BRAND.word.split("");
 
 export default function Hero() {
+  const { t } = useLang();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const yFar = useTransform(scrollYProgress, [0, 1], [0, 60]);
@@ -71,7 +73,7 @@ export default function Hero() {
   const glints = useMemo(() => { const R = rng(4); return Array.from({ length: 34 }, (_, i) => { const y = 732 + i * 5; const spread = 30 + i * 4.5; return [SUN_X - spread / 2 + (R() - 0.5) * spread * 0.6, y, 20 + R() * spread * 0.6] as const; }); }, []);
 
   return (
-    <section ref={ref} className="relative isolate h-[min(100svh,940px)] min-h-[700px] overflow-hidden bg-night" aria-label={`Welcome to ${BRAND.name}`}>
+    <section ref={ref} className="relative isolate h-[min(100svh,940px)] min-h-[700px] overflow-hidden bg-night" aria-label={t(`Welcome to ${BRAND.name}`, `${BRAND.name} में आपका स्वागत है`)}>
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
         <defs>
           <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
@@ -160,7 +162,7 @@ export default function Hero() {
 
       <motion.div style={{ y: yText, opacity: fade }} className="relative z-10 mx-auto flex h-full max-w-[1320px] flex-col justify-start px-4 pt-[clamp(110px,16vh,170px)] sm:px-8">
         <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="font-mono text-[11px] uppercase tracking-[0.18em] text-marigold sm:text-xs sm:tracking-[0.3em]">
-          {BRAND.eyebrow}
+          {t(BRAND.eyebrow, BRAND.hi.eyebrow)}
         </motion.p>
         <div className="mt-4 font-display leading-[0.86] tracking-tight">
           <h1 className="flex overflow-hidden pb-2 text-[clamp(64px,12.5vw,190px)] font-normal">
@@ -179,16 +181,16 @@ export default function Hero() {
               {BRAND.slogan && (
                 <p className="zari-text mb-3 font-display text-[clamp(24px,2.4vw,34px)] leading-tight sm:whitespace-nowrap">{BRAND.slogan}</p>
               )}
-              <p className={`${BRAND.slogan ? "max-w-[24em]" : "max-w-[22em]"} text-[clamp(15px,1.5vw,19px)] font-light leading-snug text-ivory/85`}>{BRAND.heroLine}</p>
+              <p className={`${BRAND.slogan ? "max-w-[24em]" : "max-w-[22em]"} text-[clamp(15px,1.5vw,19px)] font-light leading-snug text-ivory/85`}>{t(BRAND.heroLine, BRAND.hi.heroLine)}</p>
             </motion.div>
           </div>
         </div>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.7 }} className="mt-8 flex flex-wrap gap-3">
           <Magnetic onClick={() => scrollToId("bazaar")} className="h-12 rounded-full bg-zari px-7 font-semibold text-night shadow-[0_10px_40px_-10px_#E7BE63]">
-            Enter the bazaar
+            {t("Enter the bazaar", "बाज़ार में चलें")}
           </Magnetic>
           <Magnetic onClick={() => scrollToId("map")} className="h-12 rounded-full border border-ivory/30 bg-night/30 px-7 font-semibold backdrop-blur">
-            Find your district's craft
+            {t("Find your district's craft", "अपने ज़िले का शिल्प खोजें")}
           </Magnetic>
         </motion.div>
       </motion.div>
