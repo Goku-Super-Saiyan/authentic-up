@@ -1,0 +1,14 @@
+name: mail diagnostics
+on:
+  push:
+    branches: [claude/mail-diag]
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          sudo apt-get install -y -qq dnsutils >/dev/null 2>&1 || true
+          for n in authenticup.in send.authenticup.in resend._domainkey.authenticup.in _dmarc.authenticup.in; do
+            for t in MX TXT CNAME; do echo "== $t $n"; dig +short $t $n @8.8.8.8; done
+          done
+          echo "== /api/enquiry"; curl -s https://www.authenticup.in/api/enquiry; echo
