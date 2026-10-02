@@ -6,6 +6,19 @@ import { prettyPhone, SITE, telLink, waLink } from "../config";
 import { BRAND } from "../brand/brand";
 import { useLang } from "../i18n";
 
+// Plain links to the static craft guide pages, so search engines find them from every page.
+const CRAFT_LINKS = [
+  ["/crafts/banarasi-sarees/", "Banarasi sarees", "बनारसी साड़ियाँ"],
+  ["/crafts/bhadohi-carpets/", "Bhadohi carpets", "भदोही क़ालीन"],
+  ["/crafts/lucknow-chikankari/", "Lucknow chikankari", "लखनऊ चिकनकारी"],
+  ["/crafts/moradabad-brass/", "Moradabad brass", "मुरादाबाद पीतल"],
+  ["/crafts/firozabad-glass/", "Firozabad glass", "फ़िरोज़ाबाद काँच"],
+  ["/crafts/kannauj-attar/", "Kannauj attar", "कन्नौज इत्र"],
+  ["/crafts/nizamabad-black-pottery/", "Nizamabad black pottery", "निज़ामाबाद काली मिट्टी के बर्तन"],
+  ["/crafts/saharanpur-wood-carving/", "Saharanpur wood carving", "सहारनपुर लकड़ी नक्काशी"],
+  ["/odop/", "All 75 ODOP crafts", "सभी 75 ओडीओपी शिल्प"],
+] as const;
+
 export default function Footer() {
   const { go } = useStore();
   const { t } = useLang();
@@ -37,6 +50,10 @@ export default function Footer() {
           <span>{SITE.address}</span>
         </div>
       </div>
+      <nav className="mx-auto mt-8 flex max-w-[1320px] flex-wrap items-baseline gap-x-5 gap-y-2 px-4 text-sm text-ivory/55 sm:px-8" aria-label={t("Crafts", "शिल्प")}>
+        <span className="font-semibold text-ivory/80">{t("Crafts", "शिल्प")}</span>
+        {CRAFT_LINKS.map(([href, en, hi]) => <a key={href} href={href} className="hover:text-zari">{t(en, hi)}</a>)}
+      </nav>
       <div className="mx-auto mt-6 flex max-w-[1320px] flex-wrap justify-between gap-4 px-4 text-xs text-ivory/45 sm:px-8">
         <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label={t("Policies", "नीतियाँ")}>
           <button onClick={() => go("privacy")} className="hover:text-zari">{t("Privacy", "गोपनीयता")}</button>
