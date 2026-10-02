@@ -130,3 +130,5 @@ export const scrollToId = (id: string) => {
   else el.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 export const scrollToTop = () => (smooth.lenis ? smooth.lenis.scrollTo(0) : window.scrollTo({ top: 0, behavior: "smooth" }));
+// Straight to the top with no visible scroll, for the floating home button.
+export const jumpToTop = () => (smooth.lenis ? smooth.lenis.scrollTo(0, { immediate: true }) : window.scrollTo({ top: 0, behavior: "instant" }));
