@@ -1,16 +1,27 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect } from "react";
 import { PRODUCTS } from "../data/catalog";
+import { waLink } from "../config";
 import { inr, useStore } from "../store";
 import ProductArt from "./ProductArt";
 
 const FREE_SHIP = 2000;
 
 export default function BagDrawer() {
-  const { bag, setQty, bagOpen, setBagOpen, say } = useStore();
+  const { bag, setQty, bagOpen, setBagOpen, say, go } = useStore();
   const rows = [...bag].map(([id, q]) => ({ p: PRODUCTS.find((x) => x.id === id)!, q })).filter((r) => r.p);
   const total = rows.reduce((a, r) => a + r.p.price * r.q, 0);
   const left = Math.max(0, FREE_SHIP - total);
+
+  // Orders are confirmed by hand for now: send the bag on WhatsApp, or as an enquiry if WhatsApp isn't set up.
+  const checkout = () => {
+    if (!rows.length) { say("Add something to your bag first"); return; }
+    const lines = rows.map((r) => `• ${r.p.name} (${r.p.place}) × ${r.q}: ${inr(r.p.price * r.q)}`);
+    const link = waLink(`Namaste! I'd like to order:\n${lines.join("\n")}\nTotal: ${inr(total)}\n\nPlease confirm availability and shipping.`);
+    setBagOpen(false);
+    if (link) window.open(link, "_blank", "noopener");
+    else go("enquire");
+  };
 
   useEffect(() => {
     if (!bagOpen) return;
@@ -68,7 +79,8 @@ export default function BagDrawer() {
             </div>
             <footer className="border-t border-white/10 px-6 py-5">
               <div className="flex justify-between text-lg font-semibold tabular-nums"><span>Total</span><span>{inr(total)}</span></div>
-              <button onClick={() => say(rows.length ? "Checkout is the next thing we build" : "Add something to your bag first")} className="mt-4 h-12 w-full rounded-full bg-zari font-semibold text-night">Checkout</button>
+              <button onClick={checkout} className="mt-4 h-12 w-full rounded-full bg-zari font-semibold text-night">Place order</button>
+              <p className="mt-3 text-center text-xs text-ivory/50">We confirm availability, shipping and payment with you directly before anything is charged.</p>
             </footer>
           </motion.aside>
         </>

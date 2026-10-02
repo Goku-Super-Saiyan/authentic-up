@@ -18,12 +18,6 @@ function smooth(points: [number, number][]) {
   return d;
 }
 
-const sampleCounts = (d: District) => {
-  const i = DISTRICTS.indexOf(d);
-  const units = 18 + ((i * 37) % 160);
-  return { units, listings: units * 7 + ((i * 13) % 60) };
-};
-
 export default function CraftMap() {
   const { setFilter, say } = useStore();
   const [sel, setSel] = useState<District>(DISTRICTS.find((d) => d.name === "Varanasi")!);
@@ -35,7 +29,6 @@ export default function CraftMap() {
   const rivers = useMemo(() => RIVERS.map((r) => ({ ...r, d: smooth(r.points) })), []);
   const order = useMemo(() => [...DISTRICTS].sort((a, b) => a.lon - b.lon), []);
   const matches = q.trim() ? DISTRICTS.filter((d) => (d.name + " " + d.product).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 6) : [];
-  const { units, listings } = sampleCounts(sel);
   const live = PRODUCTS.find((p) => p.district === sel.name);
   const tip = hover ?? null;
 
@@ -156,10 +149,9 @@ export default function CraftMap() {
                 <h3 className="mt-4 font-display text-[clamp(40px,5vw,64px)] leading-none">{sel.name}</h3>
                 <p className="mt-3 text-2xl text-zari">{sel.product}</p>
                 <div className="mt-7 grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
-                  <div><p className="font-display text-4xl tabular-nums">{units}</p><p className="text-sm text-ivory/60">artisan units</p></div>
-                  <div><p className="font-display text-4xl tabular-nums">{listings.toLocaleString("en-IN")}</p><p className="text-sm text-ivory/60">listings</p></div>
+                  <div><p className="font-display text-3xl">ODOP</p><p className="text-sm text-ivory/60">One District One Product craft</p></div>
+                  <div><p className="font-display text-3xl">{live ? "In the bazaar" : "Joining soon"}</p><p className="text-sm text-ivory/60">{live ? "Pieces from this district" : "Makers from this district"}</p></div>
                 </div>
-                <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-ivory/40">Sample figures</p>
                 <button
                   onClick={() => {
                     if (live) { setFilter(live.cat); scrollToId("bazaar"); }

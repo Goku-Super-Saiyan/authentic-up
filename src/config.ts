@@ -1,5 +1,5 @@
 // Business details shown on the site. Set these as VITE_ variables in Vercel (see .env.example);
-// the fallbacks are placeholders until Goku sends the real ones.
+// the fallbacks are used when a variable isn't set.
 import { BRAND } from "./brand/brand";
 
 const env = import.meta.env;
@@ -11,6 +11,7 @@ export const SITE = {
   whatsapp: (env.VITE_WHATSAPP || "").replace(/\D/g, ""),
   phone: (env.VITE_PHONE || env.VITE_WHATSAPP || "").replace(/[^\d+]/g, ""),
   address: env.VITE_BUSINESS_ADDRESS || "Varanasi, Uttar Pradesh, India",
+  grievanceOfficer: env.VITE_GRIEVANCE_OFFICER || "",
 };
 
 export const waLink = (text: string) => SITE.whatsapp ? `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(text)}` : null;
