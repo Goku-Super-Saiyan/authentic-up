@@ -10,10 +10,11 @@ export function Emblem({ className = "", variant = "full", animated = false }: {
 
 export function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
-    <span className="flex items-center gap-2.5">
-      <Emblem className={compact ? "h-10 w-[34px]" : "h-12 w-[42px]"} animated />
-      <span className="flex flex-col leading-none">
-        <span className="font-display text-[22px] leading-none tracking-tight">
+    <span className={`flex min-w-0 items-center ${compact ? "gap-2 min-[360px]:gap-2.5" : "gap-2.5"}`}>
+      <Emblem className={`shrink-0 ${compact ? "h-10 w-[34px]" : "h-12 w-[42px]"}`} animated />
+      <span className="flex min-w-0 flex-col leading-none">
+        {/* On the narrowest phones the name shrinks a little, and is cut short rather than pushing the bag off screen. */}
+        <span lang="en" className={`truncate font-display leading-none tracking-tight ${compact ? "text-[20px] min-[360px]:text-[22px]" : "text-[22px]"}`}>
           {BRAND.word} <span className="zari-text">UP</span>
         </span>
         <span className="mt-1 hidden text-[11px] text-mist sm:block">{BRAND.hindi}</span>
